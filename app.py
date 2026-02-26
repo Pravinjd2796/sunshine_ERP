@@ -43,6 +43,7 @@ SESSION_EXPIRE_DAYS = int(os.getenv("SESSION_EXPIRE_DAYS", "30"))
 DEV_OTP_BYPASS = os.getenv("DEV_OTP_BYPASS", "true").lower() == "true"
 EMAIL_OTP_WEBHOOK_URL = os.getenv("EMAIL_OTP_WEBHOOK_URL", "").strip()
 MOBILE_OTP_WEBHOOK_URL = os.getenv("MOBILE_OTP_WEBHOOK_URL", "").strip()
+RECOVERY_KEY = os.getenv("RECOVERY_KEY", "").strip()
 
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 BACKUP_DIR.mkdir(parents=True, exist_ok=True)
@@ -110,6 +111,14 @@ def verify_password(password: str, stored: str):
         return hmac.compare_digest(digest, expected)
     except Exception:
         return False
+
+
+def recovery_guard(req_key: str):
+    if not RECOVERY_KEY:
+        return False, ("Recovery mode is disabled", 404)
+    if not req_key or not hmac.compare_digest(req_key, RECOVERY_KEY):
+        return False, ("Invalid recovery key", 403)
+    return True, None
 
 
 def sanitize_user(row):
@@ -999,6 +1008,74 @@ def admin_storage_info():
             "active_admins": admin_total,
         }
     )
+
+
+@app.get("/api/recovery/users")
+def recovery_users():
+    ok, err = recovery_guard((request.args.get("key") or "").strip())
+    if not ok:
+        msg, code = err
+        return jsonify({"error": msg}), code
+
+    with db_conn() as conn:
+        rows = conn.execute(
+            """
+            SELECT id, username, name, email, mobile, role, status,
+                   CASE WHEN password_hash IS NOT NULL THEN 1 ELSE 0 END AS has_password,
+                   created_at
+            FROM users
+            ORDER BY id ASC
+            """
+        ).fetchall()
+    return jsonify({"users": [dict(r) for r in rows]})
+
+
+@app.post("/api/recovery/reset-admin")
+def recovery_reset_admin():
+    data = request.get_json(force=True, silent=True) or {}
+    ok, err = recovery_guard((data.get("key") or "").strip())
+    if not ok:
+        msg, code = err
+        return jsonify({"error": msg}), code
+
+    username = (data.get("username") or "").strip().lower()
+    password = str(data.get("password") or "")
+    name = (data.get("name") or "Recovered Admin").strip()
+    mobile = (data.get("mobile") or "").strip() or None
+    email = (data.get("email") or "").strip() or None
+
+    if not username or len(password) < 6:
+        return jsonify({"error": "username and password(min 6 chars) are required"}), 400
+
+    with db_conn() as conn:
+        admin = conn.execute(
+            "SELECT id FROM users WHERE role='ADMIN' ORDER BY id ASC LIMIT 1"
+        ).fetchone()
+        try:
+            if admin:
+                conn.execute(
+                    """
+                    UPDATE users
+                    SET username = ?, password_hash = ?, name = ?, mobile = ?, email = ?, status = 'ACTIVE'
+                    WHERE id = ?
+                    """,
+                    (username, hash_password(password), name, mobile, email, admin["id"]),
+                )
+                admin_id = admin["id"]
+            else:
+                cur = conn.execute(
+                    """
+                    INSERT INTO users (username, password_hash, name, mobile, email, role, status)
+                    VALUES (?, ?, ?, ?, ?, 'ADMIN', 'ACTIVE')
+                    """,
+                    (username, hash_password(password), name, mobile, email),
+                )
+                admin_id = cur.lastrowid
+        except sqlite3.IntegrityError:
+            return jsonify({"error": "username/email/mobile already exists"}), 400
+
+        conn.execute("DELETE FROM sessions")
+    return jsonify({"success": True, "admin_id": admin_id, "message": "Admin credentials reset. Login again."})
 
 
 @app.get("/api/dashboard")
