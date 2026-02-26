@@ -26,7 +26,9 @@
       <div class="wrap">
         <section class="card">
           <h2>Add Vehicle</h2>
+          <p>Enter vehicle assignment and driver/operator payment details.</p>
           <form id="vehicleForm" class="form-grid">
+            <div class="form-section">Vehicle Assignment</div>
             <select name="client_id" id="clientSelect" required>
               <option value="">Select Client</option>
             </select>
@@ -38,6 +40,7 @@
             <input name="current_location" placeholder="Current Location" />
             <input type="number" name="rent_days" placeholder="Rent Days" min="0" required />
 
+            <div class="form-section">Driver Payment</div>
             <input type="number" name="driver_finalized_amount" step="0.01" placeholder="Driver Finalized Amount" required />
             <input type="number" name="driver_advance_amount" step="0.01" placeholder="Driver Advance Payment" required />
             <input type="number" name="driver_remaining_amount" step="0.01" placeholder="Driver Remaining Payment (Auto)" required readonly />
@@ -54,6 +57,7 @@
               <option value="CHECK">Driver Remaining Mode: Check</option>
             </select>
 
+            <div class="form-section">Operator Payment</div>
             <input type="number" name="operator_finalized_amount" step="0.01" placeholder="Operator Finalized Amount" required />
             <input type="number" name="operator_advance_amount" step="0.01" placeholder="Operator Advance Payment" required />
             <input type="number" name="operator_remaining_amount" step="0.01" placeholder="Operator Remaining Payment (Auto)" required readonly />

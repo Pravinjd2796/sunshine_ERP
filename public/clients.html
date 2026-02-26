@@ -26,11 +26,14 @@
       <div class="wrap">
         <section class="card">
           <h2>Add Client</h2>
+          <p>Fill basic client details and payment details in one form.</p>
           <form id="clientForm" class="form-grid">
+            <div class="form-section">Basic Client Details</div>
             <input name="name" placeholder="Client Name" required />
             <input name="phone" placeholder="Phone" />
             <input name="email" placeholder="Email" />
             <input name="address" placeholder="Address" />
+            <div class="form-section">Rental & Payment Details</div>
             <input type="number" name="vehicle_quantity" placeholder="No. of Vehicles" min="0" required />
             <input type="number" name="rent_days" placeholder="Rent Days" min="0" required />
             <input type="number" name="finalized_amount" step="0.01" placeholder="Finalized Amount" required />

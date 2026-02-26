@@ -1,39 +1,38 @@
 :root {
-  --bg: #030a14;
-  --panel: rgba(10, 24, 39, 0.72);
-  --line: rgba(140, 205, 255, 0.25);
-  --text: #e7f7ff;
-  --muted: #9ec6da;
-  --accent: #3df0ff;
-  --accent-2: #2f7cff;
+  --bg: #081425;
+  --surface: rgba(245, 251, 255, 0.9);
+  --surface-strong: rgba(255, 255, 255, 0.96);
+  --line: #d5e6f2;
+  --text: #10253a;
+  --muted: #58718a;
+  --primary: #1f7ae0;
+  --primary-2: #35b7ff;
+  --success: #0ea371;
+  --danger: #d94a5f;
 }
 
 * { box-sizing: border-box; }
 html, body { min-height: 100%; }
 body {
   margin: 0;
-  font-family: "Outfit", "Avenir Next", sans-serif;
+  font-family: "Outfit", "Segoe UI", sans-serif;
   color: var(--text);
   background-color: var(--bg);
   background-image:
-    linear-gradient(180deg, rgba(3, 10, 20, 0.55), rgba(3, 10, 20, 0.85)),
-    url('https://images.unsplash.com/photo-1515963665762-77ef90e99f0f?auto=format&fit=crop&w=1900&q=80'),
-    url('/assets/india-led-bg.svg');
-  background-position: center, center, center;
-  background-size: cover, cover, cover;
-  background-attachment: fixed, fixed, fixed;
-  background-repeat: no-repeat, no-repeat, no-repeat;
+    linear-gradient(180deg, rgba(5, 19, 35, 0.72), rgba(5, 19, 35, 0.84)),
+    url('https://images.unsplash.com/photo-1515963665762-77ef90e99f0f?auto=format&fit=crop&w=1900&q=80');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
 
 .bg-overlay {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(circle at 8% 12%, rgba(69, 197, 255, 0.24), transparent 44%),
-    radial-gradient(circle at 88% 18%, rgba(35, 113, 255, 0.2), transparent 40%),
-    radial-gradient(circle at 40% 88%, rgba(61, 240, 255, 0.14), transparent 38%),
-    linear-gradient(180deg, rgba(2, 7, 17, 0.5), rgba(2, 7, 17, 0.85));
-  animation: ambientShift 14s ease-in-out infinite alternate;
+    radial-gradient(circle at 8% 10%, rgba(68, 164, 255, 0.18), transparent 40%),
+    radial-gradient(circle at 92% 20%, rgba(35, 113, 255, 0.16), transparent 35%),
+    radial-gradient(circle at 44% 95%, rgba(34, 200, 255, 0.16), transparent 30%);
   pointer-events: none;
   z-index: 0;
 }
@@ -42,107 +41,159 @@ body {
   position: relative;
   z-index: 1;
   min-height: 100vh;
-  padding: 16px;
+  padding: 18px;
+  max-width: 1320px;
+  margin: 0 auto;
 }
 
 .topbar {
-  border: 1px solid var(--line);
-  background: var(--panel);
+  border: 1px solid rgba(209, 228, 242, 0.55);
+  background: rgba(9, 28, 49, 0.78);
   backdrop-filter: blur(8px);
-  border-radius: 14px;
-  padding: 14px 16px;
+  border-radius: 16px;
+  padding: 16px 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-.topbar h1 { margin: 0; font-size: 24px; }
-.topbar p { margin: 4px 0 0; color: var(--muted); }
+.topbar h1 { margin: 0; font-size: 28px; color: #f1f8ff; }
+.topbar p { margin: 4px 0 0; color: #c8ddf0; }
 
 .wrap {
-  margin-top: 14px;
+  margin-top: 16px;
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
 .card {
   border: 1px solid var(--line);
-  background: var(--panel);
-  backdrop-filter: blur(8px);
-  border-radius: 14px;
-  padding: 14px;
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 14px 32px rgba(8, 23, 43, 0.18);
+}
+
+.card h2 {
+  margin: 0 0 12px;
+  font-size: 21px;
+  color: #173451;
+}
+
+.card p {
+  margin: 0;
+  color: var(--muted);
 }
 
 .grid-2 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 14px;
 }
 
 .option {
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  border: 1px solid #d6e7f4;
+  border-radius: 14px;
   padding: 16px;
-  background: rgba(13, 31, 49, 0.65);
+  background: var(--surface-strong);
 }
 
-.option h3 { margin: 0 0 6px; }
-.option p { margin: 0 0 12px; color: var(--muted); }
+.option h3 { margin: 0 0 6px; font-size: 20px; }
+.option p { margin: 0 0 14px; color: var(--muted); }
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.form-section {
+  grid-column: 1 / -1;
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  border-left: 4px solid #59a9f6;
+  background: #eef6fd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #265177;
 }
 
 input, select, button, a.btn {
   width: 100%;
-  padding: 11px 12px;
+  padding: 12px 13px;
   border-radius: 10px;
-  border: 1px solid var(--line);
-  background: rgba(14, 31, 51, 0.6);
+  border: 1px solid #c8dced;
+  background: #fff;
   color: var(--text);
   font-size: 14px;
   font-family: inherit;
   text-decoration: none;
 }
 
+input::placeholder { color: #6f869c; }
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #6eaef0;
+  box-shadow: 0 0 0 3px rgba(53, 183, 255, 0.18);
+}
+
 button, a.btn {
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #041420;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: #fff;
   font-weight: 700;
   border: none;
   cursor: pointer;
 }
 
-.table-wrap { overflow: auto; }
+button:hover, a.btn:hover {
+  filter: brightness(1.05);
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.muted { color: #d8e9f8; }
+
+.table-wrap {
+  overflow: auto;
+  border: 1px solid #d6e7f4;
+  border-radius: 12px;
+  background: #fff;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
 }
-th, td {
-  border-bottom: 1px solid rgba(158, 198, 218, 0.18);
-  text-align: left;
-  padding: 8px;
-}
-th { color: #b7e9ff; background: rgba(12, 38, 59, 0.65); }
 
-.muted { color: var(--muted); }
+th, td {
+  border-bottom: 1px solid #e6eef5;
+  text-align: left;
+  padding: 10px;
+  color: #1f3a53;
+}
+
+th {
+  color: #1a4f78;
+  background: #f1f8ff;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+tr:hover td { background: #f9fcff; }
+
 .hidden { display: none !important; }
 
-@keyframes ambientShift {
-  from {
-    filter: hue-rotate(0deg) saturate(1);
-    opacity: 0.95;
-  }
-  to {
-    filter: hue-rotate(10deg) saturate(1.08);
-    opacity: 1;
-  }
-}
-
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .page { padding: 10px; }
+  .topbar { padding: 12px; }
+  .topbar h1 { font-size: 22px; }
 }
