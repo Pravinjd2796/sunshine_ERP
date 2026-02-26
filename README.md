@@ -74,6 +74,7 @@ python3 app.py
 - Users are created by admin from the **User Management** page.
 - Each user gets a `username` and `password`.
 - Session is persisted in browser local storage and extended on active usage.
+- Forgot password flow uses registered mobile number + OTP before password reset.
 
 ## Cloud Backup (Optional)
 Configure AWS keys and bucket in `.env`.

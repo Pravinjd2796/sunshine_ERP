@@ -29,6 +29,22 @@
             <button type="submit">Login</button>
           </form>
         </section>
+
+        <section class="card">
+          <h2>Forgot Password</h2>
+          <p>Enter registered mobile, verify OTP, then set new password.</p>
+          <form id="resetRequestForm" class="form-grid">
+            <input name="mobile" id="resetMobileInput" placeholder="Registered Mobile Number" required />
+            <button type="submit">Send OTP</button>
+          </form>
+          <form id="resetVerifyForm" class="form-grid" style="margin-top:10px">
+            <input name="mobile" id="resetVerifyMobileInput" placeholder="Mobile Number" required />
+            <input name="code" placeholder="OTP Code" required />
+            <input type="password" name="new_password" placeholder="New Password (min 6 chars)" required />
+            <button type="submit">Reset Password</button>
+          </form>
+          <p id="resetHint" class="muted"></p>
+        </section>
       </div>
     </main>
     <script src="/js/common.js"></script>

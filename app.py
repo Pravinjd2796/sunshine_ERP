@@ -553,6 +553,75 @@ def auth_login():
     return jsonify({"token": token, "user": sanitize_user(user)})
 
 
+@app.post("/api/auth/request-password-reset")
+def auth_request_password_reset():
+    data = request.get_json(force=True, silent=True) or {}
+    mobile = (data.get("mobile") or "").strip()
+    if not mobile:
+        return jsonify({"error": "mobile is required"}), 400
+
+    with db_conn() as conn:
+        user = conn.execute(
+            "SELECT * FROM users WHERE mobile = ? AND status = 'ACTIVE'",
+            (mobile,),
+        ).fetchone()
+        if not user:
+            return jsonify({"error": "Mobile number not registered"}), 404
+
+        code = str(int.from_bytes(os.urandom(3), "big") % 900000 + 100000)
+        otp_hash = hash_otp(code)
+        expires_at = add_minutes_iso(OTP_EXPIRE_MINUTES)
+
+        conn.execute(
+            "INSERT INTO otp_codes (user_id, channel, target, otp_hash, expires_at, used) VALUES (?, 'MOBILE', ?, ?, ?, 0)",
+            (user["id"], mobile, otp_hash, expires_at),
+        )
+
+    delivered = send_otp("MOBILE", mobile, code)
+    log_sync("PASSWORD_RESET_OTP", "SUCCESS" if delivered else "SKIPPED", f"OTP generated for mobile {mobile}")
+
+    payload = {"message": "OTP sent to your mobile number"}
+    if DEV_OTP_BYPASS:
+        payload["dev_otp"] = code
+    return jsonify(payload)
+
+
+@app.post("/api/auth/reset-password")
+def auth_reset_password():
+    data = request.get_json(force=True, silent=True) or {}
+    mobile = (data.get("mobile") or "").strip()
+    code = str(data.get("code") or "").strip()
+    new_password = str(data.get("new_password") or "")
+
+    if not mobile or not code or len(new_password) < 6:
+        return jsonify({"error": "mobile, otp code and new_password(min 6 chars) are required"}), 400
+
+    with db_conn() as conn:
+        user = conn.execute(
+            "SELECT * FROM users WHERE mobile = ? AND status = 'ACTIVE'",
+            (mobile,),
+        ).fetchone()
+        if not user:
+            return jsonify({"error": "Mobile number not registered"}), 404
+
+        otp_row = conn.execute(
+            """
+            SELECT * FROM otp_codes
+            WHERE user_id = ? AND channel = 'MOBILE' AND target = ? AND otp_hash = ? AND used = 0 AND expires_at > ?
+            ORDER BY id DESC LIMIT 1
+            """,
+            (user["id"], mobile, hash_otp(code), now_iso()),
+        ).fetchone()
+        if not otp_row:
+            return jsonify({"error": "Invalid or expired OTP"}), 401
+
+        conn.execute("UPDATE otp_codes SET used = 1 WHERE id = ?", (otp_row["id"],))
+        conn.execute("UPDATE users SET password_hash = ? WHERE id = ?", (hash_password(new_password), user["id"]))
+        conn.execute("DELETE FROM sessions WHERE user_id = ?", (user["id"],))
+
+    return jsonify({"success": True, "message": "Password reset successful. Please login again."})
+
+
 @app.post("/api/auth/request-otp")
 def auth_request_otp():
     data = request.get_json(force=True, silent=True) or {}
