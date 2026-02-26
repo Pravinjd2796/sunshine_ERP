@@ -14,11 +14,11 @@
     const users = await ERP.api('/api/users');
     ERP.fillTable(
       'usersTable',
-      ['ID', 'Username', 'Name', 'Email', 'Mobile', 'Role', 'Status', 'Actions'],
+      ['ID', 'Username', 'Name', 'Email', 'Mobile', 'Role', 'Status', 'Has Login', 'Actions'],
       users.map((u) => {
         const toggleLabel = u.status === 'ACTIVE' ? 'Disable' : 'Enable';
         const nextStatus = u.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-        return `<td>${u.id}</td><td>${u.username || ''}</td><td>${u.name}</td><td>${u.email || ''}</td><td>${u.mobile || ''}</td><td>${u.role}</td><td>${u.status}</td><td><button onclick="toggleUserStatus(${u.id}, '${nextStatus}')">${toggleLabel}</button> <button onclick="deleteUser(${u.id})">Delete</button></td>`;
+        return `<td>${u.id}</td><td>${u.username || ''}</td><td>${u.name}</td><td>${u.email || ''}</td><td>${u.mobile || ''}</td><td>${u.role}</td><td>${u.status}</td><td>${u.has_password ? 'Yes' : 'No'}</td><td><button onclick="resetCredentials(${u.id}, '${u.username || ''}')">Reset Login</button> <button onclick="toggleUserStatus(${u.id}, '${nextStatus}')">${toggleLabel}</button> <button onclick="deleteUser(${u.id})">Delete</button></td>`;
       })
     );
   }
@@ -39,6 +39,23 @@
       await loadUsers();
     } catch (e) {
       alert(e.message);
+    }
+  };
+
+  window.resetCredentials = async (id, currentUsername) => {
+    const username = prompt('Enter new username', currentUsername || '');
+    if (!username) return;
+    const password = prompt('Enter new password (min 6 chars)');
+    if (!password) return;
+    try {
+      await ERP.api(`/api/users/${id}/credentials`, {
+        method: 'PATCH',
+        body: JSON.stringify({ username, password }),
+      });
+      alert('Login credentials updated.');
+      await loadUsers();
+    } catch (e) {
+      alert(e.message || 'Failed to reset credentials');
     }
   };
 

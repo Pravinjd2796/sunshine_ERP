@@ -530,9 +530,19 @@ def auth_login():
         return jsonify({"error": "username and password are required"}), 400
 
     with db_conn() as conn:
-        user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+        user = conn.execute(
+            """
+            SELECT *
+            FROM users
+            WHERE LOWER(IFNULL(username, '')) = ?
+               OR LOWER(IFNULL(email, '')) = ?
+               OR IFNULL(mobile, '') = ?
+            LIMIT 1
+            """,
+            (username, username, username),
+        ).fetchone()
         if not user or user["status"] != "ACTIVE" or not user["password_hash"] or not verify_password(password, user["password_hash"]):
-            return jsonify({"error": "Invalid credentials"}), 401
+            return jsonify({"error": "Incorrect username/password"}), 401
 
         token = token_hex(32)
         conn.execute(
@@ -643,7 +653,7 @@ def auth_logout():
 def users_list():
     with db_conn() as conn:
         rows = conn.execute(
-            "SELECT id, username, name, email, mobile, role, status, created_at FROM users ORDER BY id DESC"
+            "SELECT id, username, name, email, mobile, role, status, created_at, CASE WHEN password_hash IS NOT NULL THEN 1 ELSE 0 END AS has_password FROM users ORDER BY id DESC"
         ).fetchall()
     return jsonify([dict(r) for r in rows])
 
@@ -698,6 +708,32 @@ def users_update(user_id: int):
                 return jsonify({"error": "Cannot inactivate the last active admin"}), 400
 
         conn.execute("UPDATE users SET status = ? WHERE id = ?", (status, user_id))
+    return jsonify({"success": True})
+
+
+@app.patch("/api/users/<int:user_id>/credentials")
+@require_auth
+@require_role("ADMIN")
+def users_update_credentials(user_id: int):
+    data = request.get_json(force=True, silent=True) or {}
+    username = (data.get("username") or "").strip().lower()
+    password = str(data.get("password") or "")
+    if not username or len(password) < 6:
+        return jsonify({"error": "username and password (min 6 chars) are required"}), 400
+
+    with db_conn() as conn:
+        user = conn.execute("SELECT id FROM users WHERE id = ?", (user_id,)).fetchone()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        taken = conn.execute("SELECT id FROM users WHERE username = ? AND id != ?", (username, user_id)).fetchone()
+        if taken:
+            return jsonify({"error": "Username already in use"}), 400
+
+        conn.execute(
+            "UPDATE users SET username = ?, password_hash = ? WHERE id = ?",
+            (username, hash_password(password), user_id),
+        )
     return jsonify({"success": True})
 
 
