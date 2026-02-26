@@ -26,12 +26,15 @@ except Exception:
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = Path(os.getenv("DB_PATH", "./data/erp.sqlite")).resolve()
-BACKUP_DIR = Path(os.getenv("BACKUP_DIR", "./backups")).resolve()
+IS_RAILWAY = bool(os.getenv("RAILWAY_PROJECT_ID") or os.getenv("RAILWAY_ENVIRONMENT"))
+DEFAULT_DB_PATH = "/app/data/erp.sqlite" if IS_RAILWAY else "./data/erp.sqlite"
+DEFAULT_BACKUP_DIR = "/app/backups" if IS_RAILWAY else "./backups"
+DB_PATH = Path(os.getenv("DB_PATH", DEFAULT_DB_PATH)).resolve()
+BACKUP_DIR = Path(os.getenv("BACKUP_DIR", DEFAULT_BACKUP_DIR)).resolve()
 BACKUP_INTERVAL_MIN = int(os.getenv("BACKUP_INTERVAL_MIN", "15"))
 OTP_SECRET = os.getenv("OTP_SECRET", "change-me")
 OTP_EXPIRE_MINUTES = int(os.getenv("OTP_EXPIRE_MINUTES", "10"))
-SESSION_EXPIRE_DAYS = int(os.getenv("SESSION_EXPIRE_DAYS", "7"))
+SESSION_EXPIRE_DAYS = int(os.getenv("SESSION_EXPIRE_DAYS", "30"))
 DEV_OTP_BYPASS = os.getenv("DEV_OTP_BYPASS", "true").lower() == "true"
 EMAIL_OTP_WEBHOOK_URL = os.getenv("EMAIL_OTP_WEBHOOK_URL", "").strip()
 MOBILE_OTP_WEBHOOK_URL = os.getenv("MOBILE_OTP_WEBHOOK_URL", "").strip()
@@ -65,6 +68,13 @@ def add_minutes_iso(minutes: int):
 
 def add_days_iso(days: int):
     return (datetime.now(timezone.utc) + timedelta(days=days)).isoformat()
+
+
+def parse_iso(ts: str):
+    try:
+        return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    except Exception:
+        return datetime(1970, 1, 1, tzinfo=timezone.utc)
 
 
 def to_num(val):
@@ -382,6 +392,7 @@ def require_auth(fn):
         if not token:
             return jsonify({"error": "Unauthorized"}), 401
 
+        now_utc = datetime.now(timezone.utc)
         with db_conn() as conn:
             row = conn.execute(
                 """
@@ -394,7 +405,17 @@ def require_auth(fn):
                 (token,),
             ).fetchone()
 
-        if not row or row["status"] != "ACTIVE" or row["expires_at"] <= now_iso():
+            if not row or row["status"] != "ACTIVE":
+                return jsonify({"error": "Session expired or invalid"}), 401
+
+            expires_at = parse_iso(row["expires_at"])
+            if expires_at <= now_utc:
+                return jsonify({"error": "Session expired or invalid"}), 401
+
+            # Sliding session: active usage keeps user logged in.
+            conn.execute("UPDATE sessions SET expires_at = ? WHERE token = ?", (add_days_iso(SESSION_EXPIRE_DAYS), token))
+
+        if not row:
             return jsonify({"error": "Session expired or invalid"}), 401
 
         request.user = sanitize_user(row)

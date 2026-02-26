@@ -90,4 +90,5 @@
 
   await loadClients();
   await loadVehicles();
+  setInterval(loadVehicles, 15000);
 })();

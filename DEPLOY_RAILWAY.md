@@ -29,7 +29,7 @@ In Railway service -> **Variables**, add:
 - `BACKUP_INTERVAL_MIN` = `15`
 - `OTP_SECRET` = `<long-random-secret>`
 - `OTP_EXPIRE_MINUTES` = `10`
-- `SESSION_EXPIRE_DAYS` = `7`
+- `SESSION_EXPIRE_DAYS` = `30`
 - `DEV_OTP_BYPASS` = `true` (for testing)
 - `EMAIL_OTP_WEBHOOK_URL` = ``
 - `MOBILE_OTP_WEBHOOK_URL` = ``
@@ -40,6 +40,7 @@ In Railway service -> **Volumes**:
 2. Mount path: `/app/data`
 
 This keeps SQLite data persistent across deploys.
+Without this volume, data is lost on redeploy/restart.
 
 ## 6. (Optional) backup folder volume
 If you want backups persisted too, mount another volume at:

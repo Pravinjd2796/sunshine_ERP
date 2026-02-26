@@ -60,4 +60,5 @@
   calcRemaining();
 
   await loadClients();
+  setInterval(loadClients, 15000);
 })();
