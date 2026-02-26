@@ -1,9 +1,8 @@
 (async function () {
-  const loginCard = document.getElementById('loginCard');
-
   try {
     const me = await ERP.api('/api/auth/me');
     if (me.user) {
+      ERP.setUser(me.user);
       location.href = '/home.html';
       return;
     }
@@ -46,6 +45,7 @@
       const data = ERP.formToObject(e.target);
       const result = await ERP.api('/api/auth/login', { method: 'POST', body: JSON.stringify(data) });
       ERP.setToken(result.token);
+      ERP.setUser(result.user);
       location.href = '/home.html';
     } catch (err) {
       const msg = err.message || 'Login failed';

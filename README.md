@@ -10,6 +10,7 @@ Offline-first ERP for your LED truck rental business across India.
 
 ## Features
 - Username/password authentication for admin and users
+- Offline-first data entry for clients and vehicles with automatic sync when internet returns
 - Role-based access: `ADMIN` and `USER`
 - Client management
 - Vehicle + driver/operator management
@@ -75,6 +76,11 @@ python3 app.py
 - Each user gets a `username` and `password`.
 - Session is persisted in browser local storage and extended on active usage.
 - Forgot password flow uses registered mobile number + OTP before password reset.
+
+## Offline + Online Behavior
+- If internet is down, client/vehicle entries are saved locally in browser outbox.
+- When internet is back, pending entries sync automatically to server.
+- App pages are cached via service worker for offline access after first load.
 
 ## Cloud Backup (Optional)
 Configure AWS keys and bucket in `.env`.
