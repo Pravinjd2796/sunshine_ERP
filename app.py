@@ -29,8 +29,13 @@ BASE_DIR = Path(__file__).resolve().parent
 IS_RAILWAY = bool(os.getenv("RAILWAY_PROJECT_ID") or os.getenv("RAILWAY_ENVIRONMENT"))
 DEFAULT_DB_PATH = "/app/data/erp.sqlite" if IS_RAILWAY else "./data/erp.sqlite"
 DEFAULT_BACKUP_DIR = "/app/backups" if IS_RAILWAY else "./backups"
-DB_PATH = Path(os.getenv("DB_PATH", DEFAULT_DB_PATH)).resolve()
-BACKUP_DIR = Path(os.getenv("BACKUP_DIR", DEFAULT_BACKUP_DIR)).resolve()
+if IS_RAILWAY:
+    # Enforce persistent volume location in Railway to avoid auth/data loss after deploy.
+    DB_PATH = Path("/app/data/erp.sqlite").resolve()
+    BACKUP_DIR = Path("/app/backups").resolve()
+else:
+    DB_PATH = Path(os.getenv("DB_PATH", DEFAULT_DB_PATH)).resolve()
+    BACKUP_DIR = Path(os.getenv("BACKUP_DIR", DEFAULT_BACKUP_DIR)).resolve()
 BACKUP_INTERVAL_MIN = int(os.getenv("BACKUP_INTERVAL_MIN", "15"))
 OTP_SECRET = os.getenv("OTP_SECRET", "change-me")
 OTP_EXPIRE_MINUTES = int(os.getenv("OTP_EXPIRE_MINUTES", "10"))
@@ -963,6 +968,26 @@ def admin_db_restore():
         return jsonify({"success": True, "message": "Database restored successfully. Refresh the app."})
     except Exception as exc:
         return jsonify({"error": f"Restore failed: {exc}"}), 500
+
+
+@app.get("/api/admin/system/storage-info")
+@require_auth
+@require_role("ADMIN")
+def admin_storage_info():
+    with db_conn() as conn:
+        users_total = conn.execute("SELECT COUNT(*) AS total FROM users").fetchone()["total"]
+        admin_total = conn.execute(
+            "SELECT COUNT(*) AS total FROM users WHERE role='ADMIN' AND status='ACTIVE'"
+        ).fetchone()["total"]
+    return jsonify(
+        {
+            "is_railway": IS_RAILWAY,
+            "db_path": str(DB_PATH),
+            "db_exists": DB_PATH.exists(),
+            "users_total": users_total,
+            "active_admins": admin_total,
+        }
+    )
 
 
 @app.get("/api/dashboard")
