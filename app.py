@@ -479,13 +479,18 @@ def days_between(start_date: str, end_date: str):
 @app.get("/api/auth/setup-status")
 def auth_setup_status():
     with db_conn() as conn:
-        credentialed = conn.execute(
-            "SELECT COUNT(*) AS total FROM users WHERE username IS NOT NULL AND password_hash IS NOT NULL"
+        credentialed_admins = conn.execute(
+            """
+            SELECT COUNT(*) AS total
+            FROM users
+            WHERE role='ADMIN' AND status='ACTIVE'
+              AND username IS NOT NULL AND password_hash IS NOT NULL
+            """
         ).fetchone()["total"]
         total_admins = conn.execute(
             "SELECT COUNT(*) AS total FROM users WHERE role='ADMIN' AND status='ACTIVE'"
         ).fetchone()["total"]
-    return jsonify({"needs_admin": credentialed == 0, "active_admins": total_admins})
+    return jsonify({"needs_admin": credentialed_admins == 0, "active_admins": total_admins})
 
 
 @app.post("/api/auth/bootstrap-admin")
@@ -501,23 +506,26 @@ def auth_bootstrap_admin():
         return jsonify({"error": "name, username and password (min 6 chars) are required"}), 400
 
     with db_conn() as conn:
-        total = conn.execute("SELECT COUNT(*) AS total FROM users").fetchone()["total"]
-        credentialed = conn.execute(
-            "SELECT COUNT(*) AS total FROM users WHERE username IS NOT NULL AND password_hash IS NOT NULL"
+        credentialed_admins = conn.execute(
+            """
+            SELECT COUNT(*) AS total
+            FROM users
+            WHERE role='ADMIN' AND status='ACTIVE'
+              AND username IS NOT NULL AND password_hash IS NOT NULL
+            """
         ).fetchone()["total"]
-        if credentialed > 0:
+        if credentialed_admins > 0:
             return jsonify({"error": "Admin already initialized"}), 400
 
-        existing_admin = conn.execute("SELECT id FROM users WHERE role='ADMIN' ORDER BY id ASC LIMIT 1").fetchone()
+        existing_admin = conn.execute(
+            "SELECT id FROM users WHERE role='ADMIN' AND status='ACTIVE' ORDER BY id ASC LIMIT 1"
+        ).fetchone()
         if existing_admin:
             conn.execute(
                 "UPDATE users SET username = ?, password_hash = ?, name = ?, email = ?, mobile = ?, status = 'ACTIVE' WHERE id = ?",
                 (username, hash_password(password), name, email, mobile, existing_admin["id"]),
             )
             return jsonify({"id": existing_admin["id"], "message": "Admin credentials initialized"})
-
-        if total > 0:
-            return jsonify({"error": "Existing users found but no admin record available"}), 400
 
         try:
             cur = conn.execute(
