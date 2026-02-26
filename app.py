@@ -566,15 +566,23 @@ def auth_register():
         return jsonify({"error": "name, username, mobile and password(min 6 chars) are required"}), 400
 
     with db_conn() as conn:
+        admin_count = conn.execute(
+            "SELECT COUNT(*) AS total FROM users WHERE role = 'ADMIN' AND status = 'ACTIVE'"
+        ).fetchone()["total"]
+        role = "ADMIN" if admin_count == 0 else "USER"
+
         try:
             cur = conn.execute(
                 """
                 INSERT INTO users (username, password_hash, name, email, mobile, role, status)
-                VALUES (?, ?, ?, ?, ?, 'USER', 'ACTIVE')
+                VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE')
                 """,
-                (username, hash_password(password), name, email, mobile),
+                (username, hash_password(password), name, email, mobile, role),
             )
-            return jsonify({"id": cur.lastrowid, "message": "Registration successful"})
+            message = "Registration successful"
+            if role == "ADMIN":
+                message = "Registration successful. You are set as first admin."
+            return jsonify({"id": cur.lastrowid, "message": message, "role": role})
         except sqlite3.IntegrityError:
             return jsonify({"error": "Username/email/mobile already exists"}), 400
 
