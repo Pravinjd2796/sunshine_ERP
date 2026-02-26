@@ -51,6 +51,19 @@
             </select>
             <button type="submit">Create User</button>
           </form>
+          <p class="muted">Tip: Select role = <b>Admin</b> to create another admin account.</p>
+        </section>
+
+        <section class="card">
+          <h2>Reset Login Credentials</h2>
+          <p>Admin can reset username/password for any user or admin.</p>
+          <form id="resetForm" class="form-grid">
+            <select id="resetUserId" required></select>
+            <input id="resetUsername" placeholder="New Username" required />
+            <input id="resetPassword" type="password" placeholder="New Password (min 6 chars)" required />
+            <button type="submit">Update Login</button>
+          </form>
+          <p class="muted" id="resetFormStatus"></p>
         </section>
 
         <section class="card">

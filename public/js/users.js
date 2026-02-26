@@ -14,18 +14,29 @@
   const restoreDbFile = document.getElementById('restoreDbFile');
   const dbActionStatus = document.getElementById('dbActionStatus');
   const usersTable = document.getElementById('usersTable');
+  const resetForm = document.getElementById('resetForm');
+  const resetUserId = document.getElementById('resetUserId');
+  const resetUsername = document.getElementById('resetUsername');
+  const resetPassword = document.getElementById('resetPassword');
+  const resetFormStatus = document.getElementById('resetFormStatus');
+  let usersCache = [];
 
   async function loadUsers() {
     const users = await ERP.api('/api/users');
+    usersCache = users;
     ERP.fillTable(
       'usersTable',
       ['ID', 'Username', 'Name', 'Email', 'Mobile', 'Role', 'Status', 'Has Login', 'Actions'],
       users.map((u) => {
         const toggleLabel = u.status === 'ACTIVE' ? 'Disable' : 'Enable';
         const nextStatus = u.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-        return `<td>${u.id}</td><td>${u.username || ''}</td><td>${u.name}</td><td>${u.email || ''}</td><td>${u.mobile || ''}</td><td>${u.role}</td><td>${u.status}</td><td>${u.has_password ? 'Yes' : 'No'}</td><td><button data-action=\"reset\" data-id=\"${u.id}\" data-username=\"${encodeURIComponent(u.username || '')}\">Reset Login</button> <button data-action=\"toggle\" data-id=\"${u.id}\" data-status=\"${nextStatus}\">${toggleLabel}</button> <button data-action=\"delete\" data-id=\"${u.id}\">Delete</button></td>`;
+        return `<td>${u.id}</td><td>${u.username || ''}</td><td>${u.name}</td><td>${u.email || ''}</td><td>${u.mobile || ''}</td><td>${u.role}</td><td>${u.status}</td><td>${u.has_password ? 'Yes' : 'No'}</td><td><button data-action=\"pick-reset\" data-id=\"${u.id}\">Pick For Reset</button> <button data-action=\"toggle\" data-id=\"${u.id}\" data-status=\"${nextStatus}\">${toggleLabel}</button> <button data-action=\"delete\" data-id=\"${u.id}\">Delete</button></td>`;
       })
     );
+
+    resetUserId.innerHTML = ['<option value=\"\">Select User/Admin</option>']
+      .concat(users.map((u) => `<option value=\"${u.id}\" data-username=\"${encodeURIComponent(u.username || '')}\">#${u.id} - ${u.name} (${u.role})</option>`))
+      .join('');
   }
 
   async function toggleUserStatus(id, status) {
@@ -47,27 +58,16 @@
     }
   }
 
-  async function resetCredentials(id, encodedUsername) {
-    const currentUsername = decodeURIComponent(encodedUsername || '');
-    const username = (prompt('Enter new username', currentUsername || '') || '').trim().toLowerCase();
-    if (!username) {
-      alert('Username is required.');
-      return;
-    }
-    const password = prompt('Enter new password (min 6 chars)');
-    if (!password || password.length < 6) {
-      alert('Password must be at least 6 characters.');
-      return;
-    }
+  async function resetCredentials(id, username, password) {
     try {
       await ERP.api(`/api/users/${id}/credentials`, {
         method: 'PATCH',
         body: JSON.stringify({ username, password }),
       });
-      alert('Login credentials updated.');
+      resetFormStatus.textContent = 'Login credentials updated.';
       await loadUsers();
     } catch (e) {
-      alert(e.message || 'Failed to reset credentials');
+      resetFormStatus.textContent = e.message || 'Failed to reset credentials';
     }
   }
 
@@ -78,8 +78,12 @@
     const id = Number(btn.getAttribute('data-id'));
     if (!id) return;
 
-    if (action === 'reset') {
-      await resetCredentials(id, btn.getAttribute('data-username') || '');
+    if (action === 'pick-reset') {
+      resetUserId.value = String(id);
+      const picked = usersCache.find((u) => Number(u.id) === id);
+      resetUsername.value = (picked && picked.username) ? picked.username : '';
+      resetPassword.value = '';
+      resetFormStatus.textContent = 'Selected user for credential reset.';
       return;
     }
     if (action === 'toggle') {
@@ -89,6 +93,33 @@
     if (action === 'delete') {
       await deleteUser(id);
     }
+  });
+
+  resetUserId.addEventListener('change', () => {
+    const id = Number(resetUserId.value);
+    const picked = usersCache.find((u) => Number(u.id) === id);
+    resetUsername.value = (picked && picked.username) ? picked.username : '';
+  });
+
+  resetForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = Number(resetUserId.value);
+    const username = (resetUsername.value || '').trim().toLowerCase();
+    const password = resetPassword.value || '';
+    if (!id) {
+      resetFormStatus.textContent = 'Please select a user/admin.';
+      return;
+    }
+    if (!username) {
+      resetFormStatus.textContent = 'Username is required.';
+      return;
+    }
+    if (password.length < 6) {
+      resetFormStatus.textContent = 'Password must be at least 6 characters.';
+      return;
+    }
+    await resetCredentials(id, username, password);
+    resetPassword.value = '';
   });
 
   form.addEventListener('submit', async (e) => {
