@@ -126,10 +126,10 @@
     e.preventDefault();
     try {
       const data = ERP.formToObject(form);
-      await ERP.api('/api/users', { method: 'POST', body: JSON.stringify(data) });
+      const result = await ERP.api('/api/users', { method: 'POST', body: JSON.stringify(data) });
       form.reset();
       await loadUsers();
-      alert('User created successfully.');
+      alert(result.message || `${(data.role || 'USER')} created successfully.`);
     } catch (e) {
       alert(e.message || 'Failed to create user');
     }

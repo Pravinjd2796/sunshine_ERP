@@ -847,7 +847,7 @@ def users_create():
                 "INSERT INTO users (username, password_hash, name, email, mobile, role, status) VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE')",
                 (username, hash_password(password), name, email, mobile, role),
             )
-            return jsonify({"id": cur.lastrowid})
+            return jsonify({"id": cur.lastrowid, "role": role, "message": f"{role} account created"})
         except sqlite3.IntegrityError:
             return jsonify({"error": "Username/email/mobile already exists"}), 400
 
