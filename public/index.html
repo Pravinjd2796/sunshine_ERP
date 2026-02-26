@@ -11,7 +11,7 @@
   </head>
   <body>
     <div class="bg-overlay"></div>
-    <main class="page">
+    <main class="page narrow">
       <section class="topbar">
         <div>
           <h1>LED Truck ERP</h1>
@@ -20,23 +20,9 @@
       </section>
 
       <div class="wrap">
-        <section id="setupCard" class="card hidden">
-          <h2>First Time Setup - Create Admin</h2>
-          <p>Create one admin account. You can add other users later from Admin panel.</p>
-          <form id="setupForm" class="form-grid">
-            <div class="form-section">Admin Account</div>
-            <input name="name" placeholder="Admin Name" required />
-            <input name="username" placeholder="Admin Username" required />
-            <input type="password" name="password" placeholder="Admin Password (min 6 chars)" required />
-            <input name="email" placeholder="Admin Email (optional)" />
-            <input name="mobile" placeholder="Admin Mobile (optional)" />
-            <button type="submit">Create Admin</button>
-          </form>
-        </section>
-
-        <section id="loginCard" class="card hidden">
+        <section id="loginCard" class="card">
           <h2>Login with Username & Password</h2>
-          <p>Use your assigned credentials to continue.</p>
+          <p>Use your admin/user credentials. New users/admins can be created only by logged-in admin.</p>
           <form id="loginForm" class="form-grid">
             <input name="username" placeholder="Username" required />
             <input type="password" name="password" placeholder="Password" required />

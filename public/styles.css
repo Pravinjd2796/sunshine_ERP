@@ -1,14 +1,12 @@
 :root {
-  --bg: #081425;
-  --surface: rgba(245, 251, 255, 0.9);
-  --surface-strong: rgba(255, 255, 255, 0.96);
-  --line: #d5e6f2;
-  --text: #10253a;
-  --muted: #58718a;
-  --primary: #1f7ae0;
-  --primary-2: #35b7ff;
-  --success: #0ea371;
-  --danger: #d94a5f;
+  --bg: #081423;
+  --surface: rgba(14, 31, 49, 0.88);
+  --surface-strong: rgba(18, 38, 60, 0.94);
+  --line: rgba(118, 166, 204, 0.28);
+  --text: #e8f4ff;
+  --muted: #aac6dc;
+  --primary: #2a83e9;
+  --primary-2: #3fb4ff;
 }
 
 * { box-sizing: border-box; }
@@ -19,7 +17,7 @@ body {
   color: var(--text);
   background-color: var(--bg);
   background-image:
-    linear-gradient(180deg, rgba(5, 19, 35, 0.72), rgba(5, 19, 35, 0.84)),
+    linear-gradient(180deg, rgba(8, 20, 35, 0.65), rgba(8, 20, 35, 0.86)),
     url('https://images.unsplash.com/photo-1515963665762-77ef90e99f0f?auto=format&fit=crop&w=1900&q=80');
   background-size: cover;
   background-position: center;
@@ -30,9 +28,9 @@ body {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(circle at 8% 10%, rgba(68, 164, 255, 0.18), transparent 40%),
-    radial-gradient(circle at 92% 20%, rgba(35, 113, 255, 0.16), transparent 35%),
-    radial-gradient(circle at 44% 95%, rgba(34, 200, 255, 0.16), transparent 30%);
+    radial-gradient(circle at 8% 10%, rgba(68, 164, 255, 0.2), transparent 40%),
+    radial-gradient(circle at 92% 20%, rgba(35, 113, 255, 0.18), transparent 35%),
+    radial-gradient(circle at 44% 95%, rgba(34, 200, 255, 0.14), transparent 30%);
   pointer-events: none;
   z-index: 0;
 }
@@ -45,10 +43,11 @@ body {
   max-width: 1320px;
   margin: 0 auto;
 }
+.page.narrow { max-width: 760px; }
 
 .topbar {
-  border: 1px solid rgba(209, 228, 242, 0.55);
-  background: rgba(9, 28, 49, 0.78);
+  border: 1px solid var(--line);
+  background: rgba(9, 24, 40, 0.78);
   backdrop-filter: blur(8px);
   border-radius: 16px;
   padding: 16px 18px;
@@ -72,17 +71,17 @@ body {
   background: var(--surface);
   border-radius: 16px;
   padding: 18px;
-  box-shadow: 0 14px 32px rgba(8, 23, 43, 0.18);
+  box-shadow: 0 14px 32px rgba(4, 14, 26, 0.4);
 }
 
 .card h2 {
-  margin: 0 0 12px;
+  margin: 0 0 8px;
   font-size: 21px;
-  color: #173451;
+  color: #e9f5ff;
 }
 
 .card p {
-  margin: 0;
+  margin: 0 0 12px;
   color: var(--muted);
 }
 
@@ -93,13 +92,13 @@ body {
 }
 
 .option {
-  border: 1px solid #d6e7f4;
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 16px;
   background: var(--surface-strong);
 }
 
-.option h3 { margin: 0 0 6px; font-size: 20px; }
+.option h3 { margin: 0 0 6px; font-size: 20px; color: #eff8ff; }
 .option p { margin: 0 0 14px; color: var(--muted); }
 
 .form-grid {
@@ -113,26 +112,26 @@ body {
   margin: 6px 0 0;
   padding: 8px 10px;
   border-left: 4px solid #59a9f6;
-  background: #eef6fd;
+  background: rgba(35, 78, 113, 0.35);
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
-  color: #265177;
+  color: #c8e7ff;
 }
 
 input, select, button, a.btn {
   width: 100%;
   padding: 12px 13px;
   border-radius: 10px;
-  border: 1px solid #c8dced;
-  background: #fff;
+  border: 1px solid rgba(138, 179, 213, 0.35);
+  background: rgba(10, 25, 40, 0.9);
   color: var(--text);
   font-size: 14px;
   font-family: inherit;
   text-decoration: none;
 }
 
-input::placeholder { color: #6f869c; }
+input::placeholder { color: #95b4cc; }
 
 input:focus, select:focus {
   outline: none;
@@ -149,7 +148,7 @@ button, a.btn {
 }
 
 button:hover, a.btn:hover {
-  filter: brightness(1.05);
+  filter: brightness(1.06);
 }
 
 .toolbar-actions {
@@ -162,9 +161,9 @@ button:hover, a.btn:hover {
 
 .table-wrap {
   overflow: auto;
-  border: 1px solid #d6e7f4;
+  border: 1px solid var(--line);
   border-radius: 12px;
-  background: #fff;
+  background: rgba(8, 22, 36, 0.88);
 }
 
 table {
@@ -174,21 +173,21 @@ table {
 }
 
 th, td {
-  border-bottom: 1px solid #e6eef5;
+  border-bottom: 1px solid rgba(130, 171, 206, 0.2);
   text-align: left;
   padding: 10px;
-  color: #1f3a53;
+  color: #dff0ff;
 }
 
 th {
-  color: #1a4f78;
-  background: #f1f8ff;
+  color: #bde2ff;
+  background: rgba(22, 50, 74, 0.85);
   position: sticky;
   top: 0;
   z-index: 1;
 }
 
-tr:hover td { background: #f9fcff; }
+tr:hover td { background: rgba(25, 55, 82, 0.35); }
 
 .hidden { display: none !important; }
 
