@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sunshine-erp-shell-v1';
+const CACHE_NAME = 'sunshine-erp-shell-v2';
 const APP_SHELL = [
   '/',
   '/index.html',

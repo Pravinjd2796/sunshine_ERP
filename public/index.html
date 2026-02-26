@@ -28,7 +28,7 @@
 
           <div id="loginPanel">
             <h2>Login with Username & Password</h2>
-            <p>Use your stored credentials to continue.</p>
+            <p>Use your stored credentials to continue. Admin login also uses this same form.</p>
             <form id="loginForm" class="form-grid">
               <input name="username" placeholder="Username" required />
               <input type="password" name="password" placeholder="Password" required />
@@ -66,6 +66,20 @@
             </form>
             <p id="registerHint" class="muted"></p>
           </div>
+        </section>
+
+        <section id="adminInitCard" class="card hidden">
+          <h2>Initialize Admin Access</h2>
+          <p>No credentialed admin account detected. Set admin username/password here once.</p>
+          <form id="adminInitForm" class="form-grid">
+            <input name="name" placeholder="Admin Name" required />
+            <input name="username" placeholder="Admin Username" required />
+            <input type="password" name="password" placeholder="Admin Password (min 6 chars)" required />
+            <input name="mobile" placeholder="Admin Mobile" required />
+            <input name="email" placeholder="Admin Email (optional)" />
+            <button type="submit">Initialize Admin</button>
+          </form>
+          <p id="adminInitHint" class="muted"></p>
         </section>
       </div>
     </main>

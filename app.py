@@ -477,7 +477,10 @@ def auth_setup_status():
         credentialed = conn.execute(
             "SELECT COUNT(*) AS total FROM users WHERE username IS NOT NULL AND password_hash IS NOT NULL"
         ).fetchone()["total"]
-    return jsonify({"needs_admin": credentialed == 0})
+        total_admins = conn.execute(
+            "SELECT COUNT(*) AS total FROM users WHERE role='ADMIN' AND status='ACTIVE'"
+        ).fetchone()["total"]
+    return jsonify({"needs_admin": credentialed == 0, "active_admins": total_admins})
 
 
 @app.post("/api/auth/bootstrap-admin")
@@ -566,10 +569,47 @@ def auth_register():
         return jsonify({"error": "name, username, mobile and password(min 6 chars) are required"}), 400
 
     with db_conn() as conn:
-        admin_count = conn.execute(
-            "SELECT COUNT(*) AS total FROM users WHERE role = 'ADMIN' AND status = 'ACTIVE'"
+        credentialed_admin_count = conn.execute(
+            "SELECT COUNT(*) AS total FROM users WHERE role = 'ADMIN' AND status = 'ACTIVE' AND username IS NOT NULL AND password_hash IS NOT NULL"
         ).fetchone()["total"]
-        role = "ADMIN" if admin_count == 0 else "USER"
+        role = "ADMIN" if credentialed_admin_count == 0 else "USER"
+
+        # Legacy-account activation: old rows may exist without username/password_hash.
+        legacy = conn.execute(
+            """
+            SELECT *
+            FROM users
+            WHERE (mobile = ? OR LOWER(IFNULL(email,'')) = LOWER(?))
+              AND (username IS NULL OR password_hash IS NULL)
+            ORDER BY id ASC
+            LIMIT 1
+            """,
+            (mobile, email or ""),
+        ).fetchone()
+
+        if legacy:
+            taken = conn.execute(
+                "SELECT id FROM users WHERE LOWER(IFNULL(username,'')) = ? AND id != ?",
+                (username, legacy["id"]),
+            ).fetchone()
+            if taken:
+                return jsonify({"error": "Username already exists"}), 400
+
+            conn.execute(
+                """
+                UPDATE users
+                SET username = ?, password_hash = ?, name = ?, email = ?, mobile = ?, status = 'ACTIVE'
+                WHERE id = ?
+                """,
+                (username, hash_password(password), name, email, mobile, legacy["id"]),
+            )
+            return jsonify(
+                {
+                    "id": legacy["id"],
+                    "message": "Existing account activated. You can login now.",
+                    "role": legacy["role"],
+                }
+            )
 
         try:
             cur = conn.execute(

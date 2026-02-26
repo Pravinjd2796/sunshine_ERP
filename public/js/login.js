@@ -1,4 +1,5 @@
 (async function () {
+  const adminInitCard = document.getElementById('adminInitCard');
   try {
     const me = await ERP.api('/api/auth/me');
     if (me.user) {
@@ -8,6 +9,15 @@
     }
   } catch {
     // not logged in
+  }
+
+  try {
+    const setup = await ERP.api('/api/auth/setup-status');
+    if (setup.needs_admin) {
+      adminInitCard.classList.remove('hidden');
+    }
+  } catch {
+    // ignore
   }
 
   const tabLogin = document.getElementById('tabLogin');
@@ -71,6 +81,18 @@
       showLoginTab();
     } catch (err) {
       alert(err.message || 'Registration failed');
+    }
+  });
+
+  document.getElementById('adminInitForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      const data = ERP.formToObject(e.target);
+      const result = await ERP.api('/api/auth/bootstrap-admin', { method: 'POST', body: JSON.stringify(data) });
+      document.getElementById('adminInitHint').textContent = result.message || 'Admin initialized. Please login.';
+      e.target.reset();
+    } catch (err) {
+      document.getElementById('adminInitHint').textContent = err.message || 'Failed to initialize admin.';
     }
   });
 
