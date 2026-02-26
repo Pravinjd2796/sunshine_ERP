@@ -521,11 +521,14 @@ def auth_bootstrap_admin():
             "SELECT id FROM users WHERE role='ADMIN' AND status='ACTIVE' ORDER BY id ASC LIMIT 1"
         ).fetchone()
         if existing_admin:
-            conn.execute(
-                "UPDATE users SET username = ?, password_hash = ?, name = ?, email = ?, mobile = ?, status = 'ACTIVE' WHERE id = ?",
-                (username, hash_password(password), name, email, mobile, existing_admin["id"]),
-            )
-            return jsonify({"id": existing_admin["id"], "message": "Admin credentials initialized"})
+            try:
+                conn.execute(
+                    "UPDATE users SET username = ?, password_hash = ?, name = ?, email = ?, mobile = ?, status = 'ACTIVE' WHERE id = ?",
+                    (username, hash_password(password), name, email, mobile, existing_admin["id"]),
+                )
+                return jsonify({"id": existing_admin["id"], "message": "Admin credentials initialized"})
+            except sqlite3.IntegrityError:
+                return jsonify({"error": "Username/email/mobile already exists"}), 400
 
         try:
             cur = conn.execute(

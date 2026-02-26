@@ -55,8 +55,15 @@
       throw new Error('Unauthorized');
     }
 
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Request failed');
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      let message = data && data.error ? data.error : '';
+      if (!message) {
+        const text = await res.text().catch(() => '');
+        message = text || `Request failed (${res.status})`;
+      }
+      throw new Error(message);
+    }
     return data;
   }
 
