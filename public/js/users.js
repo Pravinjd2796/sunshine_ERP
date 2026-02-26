@@ -9,6 +9,7 @@
 
   document.getElementById('logoutBtn').addEventListener('click', ERP.logout);
   const form = document.getElementById('userForm');
+  const createAccountBtn = document.getElementById('createAccountBtn');
   const downloadDbBtn = document.getElementById('downloadDbBtn');
   const restoreDbBtn = document.getElementById('restoreDbBtn');
   const restoreDbFile = document.getElementById('restoreDbFile');
@@ -126,14 +127,27 @@
     e.preventDefault();
     try {
       const data = ERP.formToObject(form);
+      const selectedRole = (form.querySelector('input[name="role"]:checked') || {}).value;
+      if (selectedRole) data.role = selectedRole;
+      data.role = String(data.role || 'USER').toUpperCase();
       const result = await ERP.api('/api/users', { method: 'POST', body: JSON.stringify(data) });
       form.reset();
+      const userRoleInput = form.querySelector('input[name="role"][value="USER"]');
+      if (userRoleInput) userRoleInput.checked = true;
+      if (createAccountBtn) createAccountBtn.textContent = 'Create Account';
       await loadUsers();
       alert(result.message || `${(data.role || 'USER')} created successfully.`);
     } catch (e) {
       alert(e.message || 'Failed to create user');
     }
   });
+
+  form.addEventListener('change', () => {
+    if (!createAccountBtn) return;
+    const role = (form.querySelector('input[name="role"]:checked') || {}).value || 'USER';
+    createAccountBtn.textContent = role === 'ADMIN' ? 'Create Admin' : 'Create User';
+  });
+  form.dispatchEvent(new Event('change'));
 
   downloadDbBtn.addEventListener('click', async () => {
     try {

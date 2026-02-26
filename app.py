@@ -133,6 +133,13 @@ def sanitize_user(row):
     }
 
 
+def parse_role(value):
+    raw = str(value or "").strip().upper()
+    if raw in {"ADMIN", "1", "TRUE", "YES"}:
+        return "ADMIN"
+    return "USER"
+
+
 def log_sync(event_type: str, status: str, message: str = ""):
     with db_conn() as conn:
         conn.execute(
@@ -836,7 +843,7 @@ def users_create():
     password = str(data.get("password") or "")
     email = (data.get("email") or "").strip() or None
     mobile = (data.get("mobile") or "").strip() or None
-    role = "ADMIN" if (data.get("role") == "ADMIN") else "USER"
+    role = parse_role(data.get("role"))
 
     if not name or not username or len(password) < 6:
         return jsonify({"error": "name, username and password (min 6 chars) are required"}), 400
@@ -848,6 +855,30 @@ def users_create():
                 (username, hash_password(password), name, email, mobile, role),
             )
             return jsonify({"id": cur.lastrowid, "role": role, "message": f"{role} account created"})
+        except sqlite3.IntegrityError:
+            return jsonify({"error": "Username/email/mobile already exists"}), 400
+
+
+@app.post("/api/admins")
+@require_auth
+@require_role("ADMIN")
+def admins_create():
+    data = request.get_json(force=True, silent=True) or {}
+    name = (data.get("name") or "").strip()
+    username = (data.get("username") or "").strip().lower()
+    password = str(data.get("password") or "")
+    email = (data.get("email") or "").strip() or None
+    mobile = (data.get("mobile") or "").strip() or None
+    if not name or not username or len(password) < 6:
+        return jsonify({"error": "name, username and password (min 6 chars) are required"}), 400
+
+    with db_conn() as conn:
+        try:
+            cur = conn.execute(
+                "INSERT INTO users (username, password_hash, name, email, mobile, role, status) VALUES (?, ?, ?, ?, ?, 'ADMIN', 'ACTIVE')",
+                (username, hash_password(password), name, email, mobile),
+            )
+            return jsonify({"id": cur.lastrowid, "role": "ADMIN", "message": "ADMIN account created"})
         except sqlite3.IntegrityError:
             return jsonify({"error": "Username/email/mobile already exists"}), 400
 
@@ -925,7 +956,10 @@ def users_delete(user_id: int):
 
         conn.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,))
         conn.execute("DELETE FROM otp_codes WHERE user_id = ?", (user_id,))
-        conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+        try:
+            conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+        except sqlite3.IntegrityError:
+            return jsonify({"error": "Cannot delete this account because linked records exist"}), 400
     return jsonify({"success": True})
 
 

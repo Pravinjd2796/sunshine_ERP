@@ -226,3 +226,27 @@ tr:hover td { background: rgba(25, 55, 82, 0.35); }
   border: 1px solid rgba(118, 166, 204, 0.45);
   color: #dceeff;
 }
+
+.inline-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(138, 179, 213, 0.35);
+  background: rgba(10, 25, 40, 0.9);
+}
+
+.inline-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.inline-options input[type="radio"] {
+  width: auto;
+  margin: 0;
+}

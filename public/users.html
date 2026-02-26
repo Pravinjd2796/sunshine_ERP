@@ -36,8 +36,8 @@
         </section>
 
         <section class="card">
-          <h2>Add User</h2>
-          <p>Create login credentials for team members. Only admin can do this.</p>
+          <h2>Add User / Admin</h2>
+          <p>Create login credentials for team members or additional admins.</p>
           <form id="userForm" class="form-grid">
             <div class="form-section">User Account Details</div>
             <input name="name" placeholder="User Name" required />
@@ -45,13 +45,13 @@
             <input type="password" name="password" placeholder="Password (min 6 chars)" required />
             <input name="email" placeholder="Email (optional)" />
             <input name="mobile" placeholder="Mobile (optional)" />
-            <select name="role" required>
-              <option value="USER">User</option>
-              <option value="ADMIN">Admin</option>
-            </select>
-            <button type="submit">Create User</button>
+            <div class="inline-options">
+              <label><input type="radio" name="role" value="USER" checked /> Create as User</label>
+              <label><input type="radio" name="role" value="ADMIN" /> Create as Admin</label>
+            </div>
+            <button type="submit" id="createAccountBtn">Create Account</button>
           </form>
-          <p class="muted">Tip: Select role = <b>Admin</b> to create another admin account.</p>
+          <p class="muted">Tip: choose <b>Create as Admin</b> to add another admin.</p>
         </section>
 
         <section class="card">
