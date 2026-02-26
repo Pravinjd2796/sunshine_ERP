@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ERP Login</title>
+    <title>Sunshine ERP System</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,36 +14,58 @@
     <main class="page narrow">
       <section class="topbar">
         <div>
-          <h1>LED Truck ERP</h1>
-          <p>Login</p>
+          <h1>Sunshine ERP System</h1>
+          <p>Secure Login</p>
         </div>
       </section>
 
       <div class="wrap">
-        <section id="loginCard" class="card">
-          <h2>Login with Username & Password</h2>
-          <p>Use your admin/user credentials. New users/admins can be created only by logged-in admin.</p>
-          <form id="loginForm" class="form-grid">
-            <input name="username" placeholder="Username" required />
-            <input type="password" name="password" placeholder="Password" required />
-            <button type="submit">Login</button>
-          </form>
-        </section>
-
         <section class="card">
-          <h2>Forgot Password</h2>
-          <p>Enter registered mobile, verify OTP, then set new password.</p>
-          <form id="resetRequestForm" class="form-grid">
-            <input name="mobile" id="resetMobileInput" placeholder="Registered Mobile Number" required />
-            <button type="submit">Send OTP</button>
-          </form>
-          <form id="resetVerifyForm" class="form-grid" style="margin-top:10px">
-            <input name="mobile" id="resetVerifyMobileInput" placeholder="Mobile Number" required />
-            <input name="code" placeholder="OTP Code" required />
-            <input type="password" name="new_password" placeholder="New Password (min 6 chars)" required />
-            <button type="submit">Reset Password</button>
-          </form>
-          <p id="resetHint" class="muted"></p>
+          <div class="auth-tabs">
+            <button id="tabLogin" class="tab-btn active" type="button">Existing User Login</button>
+            <button id="tabRegister" class="tab-btn" type="button">New User Register</button>
+          </div>
+
+          <div id="loginPanel">
+            <h2>Login with Username & Password</h2>
+            <p>Use your stored credentials to continue.</p>
+            <form id="loginForm" class="form-grid">
+              <input name="username" placeholder="Username" required />
+              <input type="password" name="password" placeholder="Password" required />
+              <button type="submit">Login</button>
+            </form>
+            <p id="loginError" class="error-text hidden"></p>
+            <button id="showResetBtn" type="button" class="btn ghost hidden" style="margin-top:10px">Forgot Password?</button>
+
+            <div id="resetPanel" class="hidden" style="margin-top:12px">
+              <h3>Reset Password (Mobile OTP)</h3>
+              <form id="resetRequestForm" class="form-grid">
+                <input name="mobile" id="resetMobileInput" placeholder="Registered Mobile Number" required />
+                <button type="submit">Send OTP</button>
+              </form>
+              <form id="resetVerifyForm" class="form-grid" style="margin-top:10px">
+                <input name="mobile" id="resetVerifyMobileInput" placeholder="Mobile Number" required />
+                <input name="code" placeholder="OTP Code" required />
+                <input type="password" name="new_password" placeholder="New Password (min 6 chars)" required />
+                <button type="submit">Reset Password</button>
+              </form>
+              <p id="resetHint" class="muted"></p>
+            </div>
+          </div>
+
+          <div id="registerPanel" class="hidden">
+            <h2>Register New User</h2>
+            <p>Create your account. Admin approval rules are managed internally.</p>
+            <form id="registerForm" class="form-grid">
+              <input name="name" placeholder="Full Name" required />
+              <input name="username" placeholder="Username" required />
+              <input name="mobile" placeholder="Mobile Number" required />
+              <input name="email" placeholder="Email" required />
+              <input type="password" name="password" placeholder="Password (min 6 chars)" required />
+              <button type="submit">Register</button>
+            </form>
+            <p id="registerHint" class="muted"></p>
+          </div>
         </section>
       </div>
     </main>

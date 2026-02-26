@@ -553,6 +553,32 @@ def auth_login():
     return jsonify({"token": token, "user": sanitize_user(user)})
 
 
+@app.post("/api/auth/register")
+def auth_register():
+    data = request.get_json(force=True, silent=True) or {}
+    name = (data.get("name") or "").strip()
+    username = (data.get("username") or "").strip().lower()
+    mobile = (data.get("mobile") or "").strip()
+    email = (data.get("email") or "").strip() or None
+    password = str(data.get("password") or "")
+
+    if not name or not username or not mobile or len(password) < 6:
+        return jsonify({"error": "name, username, mobile and password(min 6 chars) are required"}), 400
+
+    with db_conn() as conn:
+        try:
+            cur = conn.execute(
+                """
+                INSERT INTO users (username, password_hash, name, email, mobile, role, status)
+                VALUES (?, ?, ?, ?, ?, 'USER', 'ACTIVE')
+                """,
+                (username, hash_password(password), name, email, mobile),
+            )
+            return jsonify({"id": cur.lastrowid, "message": "Registration successful"})
+        except sqlite3.IntegrityError:
+            return jsonify({"error": "Username/email/mobile already exists"}), 400
+
+
 @app.post("/api/auth/request-password-reset")
 def auth_request_password_reset():
     data = request.get_json(force=True, silent=True) or {}

@@ -196,3 +196,33 @@ tr:hover td { background: rgba(25, 55, 82, 0.35); }
   .topbar { padding: 12px; }
   .topbar h1 { font-size: 22px; }
 }
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.tab-btn {
+  background: rgba(18, 38, 60, 0.88);
+  border: 1px solid rgba(118, 166, 204, 0.35);
+  color: #dceeff;
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: #fff;
+}
+
+.error-text {
+  margin-top: 10px;
+  color: #ff9fb0;
+  font-weight: 600;
+}
+
+.btn.ghost {
+  background: transparent;
+  border: 1px solid rgba(118, 166, 204, 0.45);
+  color: #dceeff;
+}
