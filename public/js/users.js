@@ -13,6 +13,7 @@
   const restoreDbBtn = document.getElementById('restoreDbBtn');
   const restoreDbFile = document.getElementById('restoreDbFile');
   const dbActionStatus = document.getElementById('dbActionStatus');
+  const usersTable = document.getElementById('usersTable');
 
   async function loadUsers() {
     const users = await ERP.api('/api/users');
@@ -22,21 +23,21 @@
       users.map((u) => {
         const toggleLabel = u.status === 'ACTIVE' ? 'Disable' : 'Enable';
         const nextStatus = u.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-        return `<td>${u.id}</td><td>${u.username || ''}</td><td>${u.name}</td><td>${u.email || ''}</td><td>${u.mobile || ''}</td><td>${u.role}</td><td>${u.status}</td><td>${u.has_password ? 'Yes' : 'No'}</td><td><button onclick="resetCredentials(${u.id}, '${encodeURIComponent(u.username || '')}')">Reset Login</button> <button onclick="toggleUserStatus(${u.id}, '${nextStatus}')">${toggleLabel}</button> <button onclick="deleteUser(${u.id})">Delete</button></td>`;
+        return `<td>${u.id}</td><td>${u.username || ''}</td><td>${u.name}</td><td>${u.email || ''}</td><td>${u.mobile || ''}</td><td>${u.role}</td><td>${u.status}</td><td>${u.has_password ? 'Yes' : 'No'}</td><td><button data-action=\"reset\" data-id=\"${u.id}\" data-username=\"${encodeURIComponent(u.username || '')}\">Reset Login</button> <button data-action=\"toggle\" data-id=\"${u.id}\" data-status=\"${nextStatus}\">${toggleLabel}</button> <button data-action=\"delete\" data-id=\"${u.id}\">Delete</button></td>`;
       })
     );
   }
 
-  window.toggleUserStatus = async (id, status) => {
+  async function toggleUserStatus(id, status) {
     try {
       await ERP.api(`/api/users/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
       await loadUsers();
     } catch (e) {
       alert(e.message);
     }
-  };
+  }
 
-  window.deleteUser = async (id) => {
+  async function deleteUser(id) {
     if (!confirm('Delete this user?')) return;
     try {
       await ERP.api(`/api/users/${id}`, { method: 'DELETE' });
@@ -44,9 +45,9 @@
     } catch (e) {
       alert(e.message);
     }
-  };
+  }
 
-  window.resetCredentials = async (id, encodedUsername) => {
+  async function resetCredentials(id, encodedUsername) {
     const currentUsername = decodeURIComponent(encodedUsername || '');
     const username = (prompt('Enter new username', currentUsername || '') || '').trim().toLowerCase();
     if (!username) {
@@ -68,7 +69,27 @@
     } catch (e) {
       alert(e.message || 'Failed to reset credentials');
     }
-  };
+  }
+
+  usersTable.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const action = btn.getAttribute('data-action');
+    const id = Number(btn.getAttribute('data-id'));
+    if (!id) return;
+
+    if (action === 'reset') {
+      await resetCredentials(id, btn.getAttribute('data-username') || '');
+      return;
+    }
+    if (action === 'toggle') {
+      await toggleUserStatus(id, btn.getAttribute('data-status') || 'INACTIVE');
+      return;
+    }
+    if (action === 'delete') {
+      await deleteUser(id);
+    }
+  });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
