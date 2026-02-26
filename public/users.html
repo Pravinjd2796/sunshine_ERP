@@ -25,6 +25,17 @@
 
       <div class="wrap">
         <section class="card">
+          <h2>Database Backup & Restore (Admin)</h2>
+          <p>Download current DB backup or upload a `.sqlite` file to restore.</p>
+          <div class="form-grid">
+            <button id="downloadDbBtn" type="button">Download DB Backup</button>
+            <input id="restoreDbFile" type="file" accept=".sqlite" />
+            <button id="restoreDbBtn" type="button">Upload & Restore DB</button>
+          </div>
+          <p class="muted" id="dbActionStatus"></p>
+        </section>
+
+        <section class="card">
           <h2>Add User</h2>
           <p>Create login credentials for team members. Only admin can do this.</p>
           <form id="userForm" class="form-grid">

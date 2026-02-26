@@ -16,7 +16,7 @@ from urllib import request as urlrequest
 from urllib.error import URLError, HTTPError
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, send_file
 
 try:
     import boto3
@@ -862,6 +862,67 @@ def users_delete(user_id: int):
         conn.execute("DELETE FROM otp_codes WHERE user_id = ?", (user_id,))
         conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
     return jsonify({"success": True})
+
+
+@app.get("/api/admin/db/download")
+@require_auth
+@require_role("ADMIN")
+def admin_db_download():
+    if not DB_PATH.exists():
+        return jsonify({"error": "Database file not found"}), 404
+    return send_file(
+        DB_PATH,
+        as_attachment=True,
+        download_name=f"sunshine-erp-backup-{datetime.now().strftime('%Y%m%d-%H%M%S')}.sqlite",
+        mimetype="application/octet-stream",
+    )
+
+
+@app.post("/api/admin/db/restore")
+@require_auth
+@require_role("ADMIN")
+def admin_db_restore():
+    file = request.files.get("file")
+    if not file:
+        return jsonify({"error": "No file uploaded"}), 400
+
+    filename = (file.filename or "").lower()
+    if not filename.endswith(".sqlite"):
+        return jsonify({"error": "Upload a .sqlite file"}), 400
+
+    BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+    restore_tmp = BACKUP_DIR / f"restore-{datetime.now().strftime('%Y%m%d-%H%M%S')}.sqlite"
+    file.save(restore_tmp)
+
+    try:
+        # Validate uploaded sqlite quickly before replace.
+        test_conn = sqlite3.connect(restore_tmp)
+        test_conn.execute("PRAGMA quick_check").fetchone()
+        test_conn.close()
+    except Exception:
+        if restore_tmp.exists():
+            restore_tmp.unlink(missing_ok=True)
+        return jsonify({"error": "Invalid SQLite database file"}), 400
+
+    # Backup current DB before restore.
+    current_backup = BACKUP_DIR / f"pre-restore-{datetime.now().strftime('%Y%m%d-%H%M%S')}.sqlite"
+    if DB_PATH.exists():
+        try:
+            shutil.copy2(DB_PATH, current_backup)
+        except Exception:
+            pass
+
+    try:
+        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(restore_tmp), str(DB_PATH))
+        for suffix in ("-wal", "-shm"):
+            aux = Path(str(DB_PATH) + suffix)
+            if aux.exists():
+                aux.unlink(missing_ok=True)
+        log_sync("DB_RESTORE", "SUCCESS", f"Database restored by admin user_id={request.user['id']}")
+        return jsonify({"success": True, "message": "Database restored successfully. Refresh the app."})
+    except Exception as exc:
+        return jsonify({"error": f"Restore failed: {exc}"}), 500
 
 
 @app.get("/api/dashboard")

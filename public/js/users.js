@@ -9,6 +9,10 @@
 
   document.getElementById('logoutBtn').addEventListener('click', ERP.logout);
   const form = document.getElementById('userForm');
+  const downloadDbBtn = document.getElementById('downloadDbBtn');
+  const restoreDbBtn = document.getElementById('restoreDbBtn');
+  const restoreDbFile = document.getElementById('restoreDbFile');
+  const dbActionStatus = document.getElementById('dbActionStatus');
 
   async function loadUsers() {
     const users = await ERP.api('/api/users');
@@ -69,6 +73,68 @@
       alert('User created successfully.');
     } catch (e) {
       alert(e.message || 'Failed to create user');
+    }
+  });
+
+  downloadDbBtn.addEventListener('click', async () => {
+    try {
+      dbActionStatus.textContent = 'Preparing backup download...';
+      const token = ERP.getToken();
+      const res = await fetch('/api/admin/db/download', {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to download DB');
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sunshine-erp-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.sqlite`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      dbActionStatus.textContent = 'Backup downloaded successfully.';
+    } catch (e) {
+      dbActionStatus.textContent = e.message || 'Failed to download backup.';
+    }
+  });
+
+  restoreDbBtn.addEventListener('click', async () => {
+    const file = restoreDbFile.files && restoreDbFile.files[0];
+    if (!file) {
+      dbActionStatus.textContent = 'Please choose a .sqlite file first.';
+      return;
+    }
+    if (!file.name.toLowerCase().endsWith('.sqlite')) {
+      dbActionStatus.textContent = 'Please upload a valid .sqlite file.';
+      return;
+    }
+    if (!confirm('Restore database from selected file? This will overwrite current DB data.')) return;
+
+    try {
+      dbActionStatus.textContent = 'Uploading and restoring database...';
+      const token = ERP.getToken();
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/admin/db/restore', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Restore failed');
+
+      dbActionStatus.textContent = data.message || 'Database restored successfully.';
+      restoreDbFile.value = '';
+      await loadUsers();
+      alert('Database restored. Please refresh the app pages.');
+    } catch (e) {
+      dbActionStatus.textContent = e.message || 'Restore failed.';
     }
   });
 
