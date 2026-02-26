@@ -22,7 +22,7 @@
       users.map((u) => {
         const toggleLabel = u.status === 'ACTIVE' ? 'Disable' : 'Enable';
         const nextStatus = u.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-        return `<td>${u.id}</td><td>${u.username || ''}</td><td>${u.name}</td><td>${u.email || ''}</td><td>${u.mobile || ''}</td><td>${u.role}</td><td>${u.status}</td><td>${u.has_password ? 'Yes' : 'No'}</td><td><button onclick="resetCredentials(${u.id}, '${u.username || ''}')">Reset Login</button> <button onclick="toggleUserStatus(${u.id}, '${nextStatus}')">${toggleLabel}</button> <button onclick="deleteUser(${u.id})">Delete</button></td>`;
+        return `<td>${u.id}</td><td>${u.username || ''}</td><td>${u.name}</td><td>${u.email || ''}</td><td>${u.mobile || ''}</td><td>${u.role}</td><td>${u.status}</td><td>${u.has_password ? 'Yes' : 'No'}</td><td><button onclick="resetCredentials(${u.id}, '${encodeURIComponent(u.username || '')}')">Reset Login</button> <button onclick="toggleUserStatus(${u.id}, '${nextStatus}')">${toggleLabel}</button> <button onclick="deleteUser(${u.id})">Delete</button></td>`;
       })
     );
   }
@@ -46,11 +46,18 @@
     }
   };
 
-  window.resetCredentials = async (id, currentUsername) => {
-    const username = prompt('Enter new username', currentUsername || '');
-    if (!username) return;
+  window.resetCredentials = async (id, encodedUsername) => {
+    const currentUsername = decodeURIComponent(encodedUsername || '');
+    const username = (prompt('Enter new username', currentUsername || '') || '').trim().toLowerCase();
+    if (!username) {
+      alert('Username is required.');
+      return;
+    }
     const password = prompt('Enter new password (min 6 chars)');
-    if (!password) return;
+    if (!password || password.length < 6) {
+      alert('Password must be at least 6 characters.');
+      return;
+    }
     try {
       await ERP.api(`/api/users/${id}/credentials`, {
         method: 'PATCH',
