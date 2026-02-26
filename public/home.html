@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ERP Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="bg-overlay"></div>
+    <main class="page">
+      <section class="topbar">
+        <div>
+          <h1>LED Truck ERP</h1>
+          <p>Choose What You Want To Manage</p>
+        </div>
+        <div>
+          <span id="userBadge" class="muted"></span>
+          <button id="logoutBtn" type="button">Logout</button>
+        </div>
+      </section>
+
+      <div class="wrap">
+        <section class="card">
+          <h2>Operations</h2>
+          <div class="grid-2">
+            <div class="option">
+              <h3>Client Information</h3>
+              <p>Add and view client details.</p>
+              <a class="btn" href="/clients.html">Open Client Page</a>
+            </div>
+            <div class="option">
+              <h3>Vehicle Information</h3>
+              <p>Add and view vehicle, driver and operator details.</p>
+              <a class="btn" href="/vehicles.html">Open Vehicle Page</a>
+            </div>
+            <div class="option hidden" id="adminUsersOption">
+              <h3>User Management (Admin)</h3>
+              <p>Add, disable, or remove users.</p>
+              <a class="btn" href="/users.html">Open User Management</a>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+    <script src="/js/common.js"></script>
+    <script src="/js/home.js"></script>
+  </body>
+</html>

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ERP Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="bg-overlay"></div>
+    <main class="page">
+      <section class="topbar">
+        <div>
+          <h1>LED Truck ERP</h1>
+          <p>Login</p>
+        </div>
+      </section>
+
+      <div class="wrap">
+        <section id="setupCard" class="card hidden">
+          <h2>First Time Setup - Create Admin</h2>
+          <form id="setupForm" class="form-grid">
+            <input name="name" placeholder="Admin Name" required />
+            <input name="email" placeholder="Admin Email (optional)" />
+            <input name="mobile" placeholder="Admin Mobile (optional)" />
+            <button type="submit">Create Admin</button>
+          </form>
+        </section>
+
+        <section id="loginCard" class="card hidden">
+          <h2>Login with OTP</h2>
+          <form id="requestOtpForm" class="form-grid">
+            <input name="identifier" id="identifierInput" placeholder="Email or Mobile" required />
+            <button type="submit">Send OTP</button>
+          </form>
+          <form id="verifyOtpForm" class="form-grid" style="margin-top:10px">
+            <input name="identifier" id="verifyIdentifierInput" placeholder="Email or Mobile" required />
+            <input name="code" placeholder="Enter OTP" required />
+            <button type="submit">Verify & Login</button>
+          </form>
+          <p id="otpHint" class="muted"></p>
+        </section>
+      </div>
+    </main>
+    <script src="/js/common.js"></script>
+    <script src="/js/login.js"></script>
+  </body>
+</html>

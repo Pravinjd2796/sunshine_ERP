@@ -1,0 +1,89 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1600" y2="900" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#071422"/>
+      <stop offset="0.55" stop-color="#0D2238"/>
+      <stop offset="1" stop-color="#102E4C"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1260 170) rotate(118) scale(340 470)">
+      <stop stop-color="#4BE8FF" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#4BE8FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(290 760) rotate(-20) scale(420 300)">
+      <stop stop-color="#2F7CFF" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#2F7CFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="road" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#0A121C"/>
+      <stop offset="1" stop-color="#111D2B"/>
+    </linearGradient>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <rect width="1600" height="900" fill="url(#glowA)"/>
+  <rect width="1600" height="900" fill="url(#glowB)"/>
+
+  <g opacity="0.16" stroke="#7FD7FF" stroke-width="2">
+    <path d="M80 720L350 580L620 640L900 510L1210 560L1490 470"/>
+    <path d="M50 780L320 640L600 700L880 570L1180 620L1460 530"/>
+  </g>
+
+  <g opacity="0.22" fill="#BEE9FF" font-family="Verdana" font-size="16">
+    <text x="970" y="310">Delhi</text>
+    <text x="920" y="390">Jaipur</text>
+    <text x="840" y="460">Mumbai</text>
+    <text x="1010" y="500">Hyderabad</text>
+    <text x="940" y="560">Bengaluru</text>
+    <text x="1135" y="455">Kolkata</text>
+    <text x="760" y="420">Ahmedabad</text>
+  </g>
+
+  <g opacity="0.2" stroke="#6FE4FF" stroke-width="1.5">
+    <path d="M980 295L845 455L1000 495L1125 450"/>
+    <path d="M845 455L940 560"/>
+  </g>
+
+  <g>
+    <rect x="70" y="720" width="1460" height="180" fill="url(#road)"/>
+    <g opacity="0.42" stroke="#FFD985" stroke-width="8" stroke-dasharray="30 28">
+      <line x1="120" y1="810" x2="1490" y2="810"/>
+    </g>
+  </g>
+
+  <g transform="translate(230 590)">
+    <rect x="0" y="40" width="420" height="110" rx="16" fill="#0B1828" stroke="#38E3FF"/>
+    <rect x="18" y="57" width="288" height="74" rx="10" fill="#031626" stroke="#54F2FF"/>
+    <text x="34" y="102" fill="#6EFBFF" font-family="Verdana" font-size="26" font-weight="700">ELECTION CAMPAIGN</text>
+    <text x="34" y="125" fill="#BDEEFF" font-family="Verdana" font-size="14">Outdoor LED Promotion Truck</text>
+    <rect x="315" y="65" width="86" height="64" rx="6" fill="#13273A"/>
+    <circle cx="76" cy="162" r="22" fill="#081220" stroke="#A9BAC9" stroke-width="4"/>
+    <circle cx="330" cy="162" r="22" fill="#081220" stroke="#A9BAC9" stroke-width="4"/>
+    <rect x="355" y="15" width="8" height="25" fill="#D8E4EF"/>
+    <path d="M363 15L397 25L363 35Z" fill="#FF7B7B"/>
+  </g>
+
+  <g transform="translate(850 610)">
+    <rect x="0" y="38" width="350" height="102" rx="14" fill="#0C1A2B" stroke="#30D9FF"/>
+    <rect x="16" y="54" width="230" height="67" rx="9" fill="#041423"/>
+    <text x="28" y="96" fill="#72F8FF" font-family="Verdana" font-size="24" font-weight="700">VOTE AWARENESS</text>
+    <rect x="257" y="62" width="75" height="58" rx="6" fill="#12273A"/>
+    <circle cx="62" cy="150" r="20" fill="#091321" stroke="#A9BAC9" stroke-width="4"/>
+    <circle cx="285" cy="150" r="20" fill="#091321" stroke="#A9BAC9" stroke-width="4"/>
+    <rect x="300" y="12" width="8" height="26" fill="#D8E4EF"/>
+    <path d="M308 12L342 22L308 32Z" fill="#5BB6FF"/>
+  </g>
+
+  <g opacity="0.38" filter="url(#soft)">
+    <ellipse cx="445" cy="760" rx="220" ry="24" fill="#2EE6FF"/>
+    <ellipse cx="1015" cy="768" rx="190" ry="22" fill="#2EE6FF"/>
+  </g>
+
+  <g opacity="0.22" fill="#9AE8FF">
+    <circle cx="120" cy="120" r="2"/><circle cx="240" cy="180" r="2"/><circle cx="350" cy="140" r="1.8"/>
+    <circle cx="1410" cy="130" r="2"/><circle cx="1325" cy="200" r="1.8"/><circle cx="1500" cy="210" r="1.5"/>
+    <circle cx="780" cy="90" r="1.7"/><circle cx="860" cy="140" r="1.4"/><circle cx="930" cy="105" r="1.6"/>
+  </g>
+</svg>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vehicles</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="bg-overlay"></div>
+    <main class="page">
+      <section class="topbar">
+        <div>
+          <h1>Vehicle Management</h1>
+          <p>Add and view vehicle, driver and operator records</p>
+        </div>
+        <div>
+          <a class="btn" href="/home.html">Home</a>
+          <button id="logoutBtn" type="button">Logout</button>
+        </div>
+      </section>
+
+      <div class="wrap">
+        <section class="card">
+          <h2>Add Vehicle</h2>
+          <form id="vehicleForm" class="form-grid">
+            <select name="client_id" id="clientSelect" required>
+              <option value="">Select Client</option>
+            </select>
+            <input name="vehicle_number" placeholder="Vehicle Number" required />
+            <input name="driver_name" placeholder="Driver Name" />
+            <input name="driver_phone" placeholder="Driver Phone" />
+            <input name="operator_name" placeholder="Operator Name" />
+            <input name="operator_phone" placeholder="Operator Phone" />
+            <input name="current_location" placeholder="Current Location" />
+            <input type="number" name="rent_days" placeholder="Rent Days" min="0" required />
+
+            <input type="number" name="driver_finalized_amount" step="0.01" placeholder="Driver Finalized Amount" required />
+            <input type="number" name="driver_advance_amount" step="0.01" placeholder="Driver Advance Payment" required />
+            <input type="number" name="driver_remaining_amount" step="0.01" placeholder="Driver Remaining Payment (Auto)" required readonly />
+            <select name="driver_advance_mode" required>
+              <option value="">Driver Advance Mode</option>
+              <option value="CASH">Cash</option>
+              <option value="ONLINE">Online</option>
+              <option value="CHECK">Check</option>
+            </select>
+            <select name="driver_remaining_mode" required>
+              <option value="PENDING">Driver Remaining Mode: Pending</option>
+              <option value="CASH">Driver Remaining Mode: Cash</option>
+              <option value="ONLINE">Driver Remaining Mode: Online</option>
+              <option value="CHECK">Driver Remaining Mode: Check</option>
+            </select>
+
+            <input type="number" name="operator_finalized_amount" step="0.01" placeholder="Operator Finalized Amount" required />
+            <input type="number" name="operator_advance_amount" step="0.01" placeholder="Operator Advance Payment" required />
+            <input type="number" name="operator_remaining_amount" step="0.01" placeholder="Operator Remaining Payment (Auto)" required readonly />
+            <select name="operator_advance_mode" required>
+              <option value="">Operator Advance Mode</option>
+              <option value="CASH">Cash</option>
+              <option value="ONLINE">Online</option>
+              <option value="CHECK">Check</option>
+            </select>
+            <select name="operator_remaining_mode" required>
+              <option value="PENDING">Operator Remaining Mode: Pending</option>
+              <option value="CASH">Operator Remaining Mode: Cash</option>
+              <option value="ONLINE">Operator Remaining Mode: Online</option>
+              <option value="CHECK">Operator Remaining Mode: Check</option>
+            </select>
+
+            <input name="notes" placeholder="Notes" />
+            <button type="submit">Save Vehicle</button>
+          </form>
+        </section>
+
+        <section class="card">
+          <h2>All Vehicles</h2>
+          <div class="table-wrap"><table id="vehiclesTable"></table></div>
+        </section>
+      </div>
+    </main>
+    <script src="/js/common.js"></script>
+    <script src="/js/vehicles.js"></script>
+  </body>
+</html>

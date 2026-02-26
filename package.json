@@ -1,0 +1,17 @@
+{
+  "name": "led-truck-erp",
+  "version": "1.0.0",
+  "description": "Offline-first ERP for LED truck rentals",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.883.0",
+    "better-sqlite3": "^11.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1"
+  }
+}

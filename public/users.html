@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="bg-overlay"></div>
+    <main class="page">
+      <section class="topbar">
+        <div>
+          <h1>Admin - User Management</h1>
+          <p>Only admin can add, disable, or remove users</p>
+        </div>
+        <div>
+          <a class="btn" href="/home.html">Home</a>
+          <button id="logoutBtn" type="button">Logout</button>
+        </div>
+      </section>
+
+      <div class="wrap">
+        <section class="card">
+          <h2>Add User</h2>
+          <form id="userForm" class="form-grid">
+            <input name="name" placeholder="User Name" required />
+            <input name="email" placeholder="Email (optional)" />
+            <input name="mobile" placeholder="Mobile (optional)" />
+            <select name="role" required>
+              <option value="USER">User</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+            <button type="submit">Create User</button>
+          </form>
+        </section>
+
+        <section class="card">
+          <h2>All Users</h2>
+          <div class="table-wrap"><table id="usersTable"></table></div>
+        </section>
+      </div>
+    </main>
+    <script src="/js/common.js"></script>
+    <script src="/js/users.js"></script>
+  </body>
+</html>
