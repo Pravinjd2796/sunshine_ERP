@@ -14,11 +14,11 @@
     const users = await ERP.api('/api/users');
     ERP.fillTable(
       'usersTable',
-      ['ID', 'Name', 'Email', 'Mobile', 'Role', 'Status', 'Actions'],
+      ['ID', 'Username', 'Name', 'Email', 'Mobile', 'Role', 'Status', 'Actions'],
       users.map((u) => {
         const toggleLabel = u.status === 'ACTIVE' ? 'Disable' : 'Enable';
         const nextStatus = u.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-        return `<td>${u.id}</td><td>${u.name}</td><td>${u.email || ''}</td><td>${u.mobile || ''}</td><td>${u.role}</td><td>${u.status}</td><td><button onclick="toggleUserStatus(${u.id}, '${nextStatus}')">${toggleLabel}</button> <button onclick="deleteUser(${u.id})">Delete</button></td>`;
+        return `<td>${u.id}</td><td>${u.username || ''}</td><td>${u.name}</td><td>${u.email || ''}</td><td>${u.mobile || ''}</td><td>${u.role}</td><td>${u.status}</td><td><button onclick="toggleUserStatus(${u.id}, '${nextStatus}')">${toggleLabel}</button> <button onclick="deleteUser(${u.id})">Delete</button></td>`;
       })
     );
   }
@@ -44,14 +44,15 @@
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const data = ERP.formToObject(form);
-    if (!data.email && !data.mobile) {
-      alert('Provide email or mobile');
-      return;
+    try {
+      const data = ERP.formToObject(form);
+      await ERP.api('/api/users', { method: 'POST', body: JSON.stringify(data) });
+      form.reset();
+      await loadUsers();
+      alert('User created successfully.');
+    } catch (e) {
+      alert(e.message || 'Failed to create user');
     }
-    await ERP.api('/api/users', { method: 'POST', body: JSON.stringify(data) });
-    form.reset();
-    await loadUsers();
   });
 
   await loadUsers();

@@ -18,33 +18,27 @@
 
   document.getElementById('setupForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const data = ERP.formToObject(e.target);
-    if (!data.email && !data.mobile) {
-      alert('Provide email or mobile for admin login.');
-      return;
+    try {
+      const data = ERP.formToObject(e.target);
+      await ERP.api('/api/auth/bootstrap-admin', { method: 'POST', body: JSON.stringify(data) });
+      alert('Admin created. Now login with username and password.');
+      e.target.reset();
+      setupCard.classList.add('hidden');
+      loginCard.classList.remove('hidden');
+    } catch (err) {
+      alert(err.message || 'Failed to create admin');
     }
-    await ERP.api('/api/auth/bootstrap-admin', { method: 'POST', body: JSON.stringify(data) });
-    alert('Admin created. Now login with OTP.');
-    e.target.reset();
-    setupCard.classList.add('hidden');
-    loginCard.classList.remove('hidden');
   });
 
-  document.getElementById('requestOtpForm').addEventListener('submit', async (e) => {
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const data = ERP.formToObject(e.target);
-    const result = await ERP.api('/api/auth/request-otp', { method: 'POST', body: JSON.stringify(data) });
-    document.getElementById('verifyIdentifierInput').value = data.identifier;
-    document.getElementById('otpHint').textContent = result.dev_otp
-      ? `DEV OTP: ${result.dev_otp}`
-      : result.message;
-  });
-
-  document.getElementById('verifyOtpForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const data = ERP.formToObject(e.target);
-    const result = await ERP.api('/api/auth/verify-otp', { method: 'POST', body: JSON.stringify(data) });
-    ERP.setToken(result.token);
-    location.href = '/home.html';
+    try {
+      const data = ERP.formToObject(e.target);
+      const result = await ERP.api('/api/auth/login', { method: 'POST', body: JSON.stringify(data) });
+      ERP.setToken(result.token);
+      location.href = '/home.html';
+    } catch (err) {
+      alert(err.message || 'Login failed');
+    }
   });
 })();

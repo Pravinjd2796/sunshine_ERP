@@ -92,9 +92,25 @@ def hash_otp(code: str):
     return hmac.new(OTP_SECRET.encode(), code.encode(), hashlib.sha256).hexdigest()
 
 
+def hash_password(password: str):
+    salt = os.urandom(16).hex()
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(salt), 120000).hex()
+    return f"{salt}${digest}"
+
+
+def verify_password(password: str, stored: str):
+    try:
+        salt, expected = stored.split("$", 1)
+        digest = hashlib.pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(salt), 120000).hex()
+        return hmac.compare_digest(digest, expected)
+    except Exception:
+        return False
+
+
 def sanitize_user(row):
     return {
         "id": row["id"],
+        "username": row["username"],
         "name": row["name"],
         "email": row["email"],
         "mobile": row["mobile"],
@@ -117,6 +133,8 @@ def init_db():
             """
             CREATE TABLE IF NOT EXISTS users (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
+              username TEXT UNIQUE,
+              password_hash TEXT,
               name TEXT NOT NULL,
               email TEXT UNIQUE,
               mobile TEXT UNIQUE,
@@ -266,6 +284,13 @@ def init_db():
         )
 
         # Lightweight column migration for existing SQLite files.
+        user_cols = {r["name"] for r in conn.execute("PRAGMA table_info(users)").fetchall()}
+        if "username" not in user_cols:
+            conn.execute("ALTER TABLE users ADD COLUMN username TEXT")
+        if "password_hash" not in user_cols:
+            conn.execute("ALTER TABLE users ADD COLUMN password_hash TEXT")
+        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)")
+
         client_cols = {r["name"] for r in conn.execute("PRAGMA table_info(clients)").fetchall()}
         client_additions = [
             ("vehicle_quantity", "INTEGER NOT NULL DEFAULT 0"),
@@ -397,7 +422,7 @@ def require_auth(fn):
             row = conn.execute(
                 """
                 SELECT s.token, s.expires_at,
-                       u.id, u.name, u.email, u.mobile, u.role, u.status
+                       u.id, u.username, u.name, u.email, u.mobile, u.role, u.status
                 FROM sessions s
                 JOIN users u ON u.id = s.user_id
                 WHERE s.token = ?
@@ -449,30 +474,73 @@ def days_between(start_date: str, end_date: str):
 @app.get("/api/auth/setup-status")
 def auth_setup_status():
     with db_conn() as conn:
-        total = conn.execute("SELECT COUNT(*) AS total FROM users").fetchone()["total"]
-    return jsonify({"needs_admin": total == 0})
+        credentialed = conn.execute(
+            "SELECT COUNT(*) AS total FROM users WHERE username IS NOT NULL AND password_hash IS NOT NULL"
+        ).fetchone()["total"]
+    return jsonify({"needs_admin": credentialed == 0})
 
 
 @app.post("/api/auth/bootstrap-admin")
 def auth_bootstrap_admin():
     data = request.get_json(force=True, silent=True) or {}
     name = (data.get("name") or "").strip()
+    username = (data.get("username") or "").strip().lower()
+    password = str(data.get("password") or "")
     email = (data.get("email") or "").strip() or None
     mobile = (data.get("mobile") or "").strip() or None
 
-    if not name or (not email and not mobile):
-        return jsonify({"error": "name and either email or mobile are required"}), 400
+    if not name or not username or len(password) < 6:
+        return jsonify({"error": "name, username and password (min 6 chars) are required"}), 400
 
     with db_conn() as conn:
         total = conn.execute("SELECT COUNT(*) AS total FROM users").fetchone()["total"]
-        if total > 0:
+        credentialed = conn.execute(
+            "SELECT COUNT(*) AS total FROM users WHERE username IS NOT NULL AND password_hash IS NOT NULL"
+        ).fetchone()["total"]
+        if credentialed > 0:
             return jsonify({"error": "Admin already initialized"}), 400
 
-        cur = conn.execute(
-            "INSERT INTO users (name, email, mobile, role, status) VALUES (?, ?, ?, 'ADMIN', 'ACTIVE')",
-            (name, email, mobile),
+        existing_admin = conn.execute("SELECT id FROM users WHERE role='ADMIN' ORDER BY id ASC LIMIT 1").fetchone()
+        if existing_admin:
+            conn.execute(
+                "UPDATE users SET username = ?, password_hash = ?, name = ?, email = ?, mobile = ?, status = 'ACTIVE' WHERE id = ?",
+                (username, hash_password(password), name, email, mobile, existing_admin["id"]),
+            )
+            return jsonify({"id": existing_admin["id"], "message": "Admin credentials initialized"})
+
+        if total > 0:
+            return jsonify({"error": "Existing users found but no admin record available"}), 400
+
+        try:
+            cur = conn.execute(
+                "INSERT INTO users (username, password_hash, name, email, mobile, role, status) VALUES (?, ?, ?, ?, ?, 'ADMIN', 'ACTIVE')",
+                (username, hash_password(password), name, email, mobile),
+            )
+            return jsonify({"id": cur.lastrowid, "message": "Admin created"})
+        except sqlite3.IntegrityError:
+            return jsonify({"error": "Username/email/mobile already exists"}), 400
+
+
+@app.post("/api/auth/login")
+def auth_login():
+    data = request.get_json(force=True, silent=True) or {}
+    username = (data.get("username") or "").strip().lower()
+    password = str(data.get("password") or "")
+    if not username or not password:
+        return jsonify({"error": "username and password are required"}), 400
+
+    with db_conn() as conn:
+        user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+        if not user or user["status"] != "ACTIVE" or not user["password_hash"] or not verify_password(password, user["password_hash"]):
+            return jsonify({"error": "Invalid credentials"}), 401
+
+        token = token_hex(32)
+        conn.execute(
+            "INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)",
+            (user["id"], token, add_days_iso(SESSION_EXPIRE_DAYS)),
         )
-        return jsonify({"id": cur.lastrowid, "message": "Admin created"})
+
+    return jsonify({"token": token, "user": sanitize_user(user)})
 
 
 @app.post("/api/auth/request-otp")
@@ -575,7 +643,7 @@ def auth_logout():
 def users_list():
     with db_conn() as conn:
         rows = conn.execute(
-            "SELECT id, name, email, mobile, role, status, created_at FROM users ORDER BY id DESC"
+            "SELECT id, username, name, email, mobile, role, status, created_at FROM users ORDER BY id DESC"
         ).fetchall()
     return jsonify([dict(r) for r in rows])
 
@@ -586,19 +654,24 @@ def users_list():
 def users_create():
     data = request.get_json(force=True, silent=True) or {}
     name = (data.get("name") or "").strip()
+    username = (data.get("username") or "").strip().lower()
+    password = str(data.get("password") or "")
     email = (data.get("email") or "").strip() or None
     mobile = (data.get("mobile") or "").strip() or None
     role = "ADMIN" if (data.get("role") == "ADMIN") else "USER"
 
-    if not name or (not email and not mobile):
-        return jsonify({"error": "name and either email or mobile are required"}), 400
+    if not name or not username or len(password) < 6:
+        return jsonify({"error": "name, username and password (min 6 chars) are required"}), 400
 
     with db_conn() as conn:
-        cur = conn.execute(
-            "INSERT INTO users (name, email, mobile, role, status) VALUES (?, ?, ?, ?, 'ACTIVE')",
-            (name, email, mobile, role),
-        )
-    return jsonify({"id": cur.lastrowid})
+        try:
+            cur = conn.execute(
+                "INSERT INTO users (username, password_hash, name, email, mobile, role, status) VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE')",
+                (username, hash_password(password), name, email, mobile, role),
+            )
+            return jsonify({"id": cur.lastrowid})
+        except sqlite3.IntegrityError:
+            return jsonify({"error": "Username/email/mobile already exists"}), 400
 
 
 @app.patch("/api/users/<int:user_id>")

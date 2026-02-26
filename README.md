@@ -9,7 +9,7 @@ Offline-first ERP for your LED truck rental business across India.
 - Backup: Local snapshots + optional AWS S3 upload
 
 ## Features
-- OTP authentication (email or mobile)
+- Username/password authentication for admin and users
 - Role-based access: `ADMIN` and `USER`
 - Client management
 - Vehicle + driver/operator management
@@ -51,8 +51,7 @@ python3 app.py
 
 ## First Login
 1. Create admin on first screen.
-2. Request OTP with admin email/mobile.
-3. Verify OTP and login.
+2. Login using admin username and password.
 4. After login, app opens a simple home page with two choices:
    - Client Information
    - Vehicle Information
@@ -71,23 +70,10 @@ python3 app.py
   - driver finalized, advance + mode, remaining + mode
   - operator finalized, advance + mode, remaining + mode
 
-## OTP Delivery
-- Development: `DEV_OTP_BYPASS=true` shows OTP on UI.
-- Production:
-  - set `DEV_OTP_BYPASS=false`
-  - configure:
-    - `EMAIL_OTP_WEBHOOK_URL`
-    - `MOBILE_OTP_WEBHOOK_URL`
-
-Your webhook should accept JSON:
-```json
-{
-  "channel": "EMAIL or MOBILE",
-  "target": "destination",
-  "otp": "123456",
-  "message": "Your ERP OTP is ..."
-}
-```
+## Login Notes
+- Users are created by admin from the **User Management** page.
+- Each user gets a `username` and `password`.
+- Session is persisted in browser local storage and extended on active usage.
 
 ## Cloud Backup (Optional)
 Configure AWS keys and bucket in `.env`.

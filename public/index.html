@@ -24,6 +24,8 @@
           <h2>First Time Setup - Create Admin</h2>
           <form id="setupForm" class="form-grid">
             <input name="name" placeholder="Admin Name" required />
+            <input name="username" placeholder="Admin Username" required />
+            <input type="password" name="password" placeholder="Admin Password (min 6 chars)" required />
             <input name="email" placeholder="Admin Email (optional)" />
             <input name="mobile" placeholder="Admin Mobile (optional)" />
             <button type="submit">Create Admin</button>
@@ -31,17 +33,12 @@
         </section>
 
         <section id="loginCard" class="card hidden">
-          <h2>Login with OTP</h2>
-          <form id="requestOtpForm" class="form-grid">
-            <input name="identifier" id="identifierInput" placeholder="Email or Mobile" required />
-            <button type="submit">Send OTP</button>
+          <h2>Login with Username & Password</h2>
+          <form id="loginForm" class="form-grid">
+            <input name="username" placeholder="Username" required />
+            <input type="password" name="password" placeholder="Password" required />
+            <button type="submit">Login</button>
           </form>
-          <form id="verifyOtpForm" class="form-grid" style="margin-top:10px">
-            <input name="identifier" id="verifyIdentifierInput" placeholder="Email or Mobile" required />
-            <input name="code" placeholder="Enter OTP" required />
-            <button type="submit">Verify & Login</button>
-          </form>
-          <p id="otpHint" class="muted"></p>
         </section>
       </div>
     </main>
